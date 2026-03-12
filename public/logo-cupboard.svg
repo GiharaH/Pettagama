@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="240" viewBox="0 0 980 240" fill="none" role="img" aria-label="Pettagama logo">
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="980" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#54311A"/>
+      <stop offset="0.5" stop-color="#844f39"/>
+      <stop offset="1" stop-color="#54311A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Traditional rectangular border frame only (no fill) -->
+  <rect x="44" y="34" width="892" height="172" rx="10" stroke="url(#wood)" stroke-width="10"/>
+  <rect x="62" y="52" width="856" height="136" rx="8" stroke="#F5E7DE" stroke-opacity="0.75" stroke-width="2"/>
+
+  <!-- Wordmark -->
+  <g>
+    <text x="490" y="142" text-anchor="middle"
+      font-family="IM Fell English, Georgia, serif"
+      font-size="78"
+      letter-spacing="1.5"
+      fill="#54311A">Pettagama</text>
+  </g>
+</svg>
+
