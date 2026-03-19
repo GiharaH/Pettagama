@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getWardrobe, saveWardrobe } from '@/lib/storage'
+import { suggestCategoryForImage } from '@/lib/ai'
 import { CATEGORY_LABELS, ALL_CATEGORIES, COLOUR_GROUPS, SEASONS } from '@/lib/constants'
 import type { WardrobeItem, WardrobeCategory, ColourGroup, SeasonSuitability } from '@/types'
 import { BrandHeader } from '@/components/BrandHeader'
@@ -20,6 +21,7 @@ export function AddItem() {
   const [colourGroup, setColourGroup] = useState<ColourGroup>('neutral')
   const [season, setSeason] = useState<SeasonSuitability>('all_season')
   const [saving, setSaving] = useState(false)
+  const [suggestingCategory, setSuggestingCategory] = useState(false)
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -27,6 +29,26 @@ export function AddItem() {
     const url = URL.createObjectURL(file)
     setPreviewUrl(url)
     setStep('details')
+  }
+
+  useEffect(() => {
+    if (!previewUrl || step !== 'details') return
+    setSuggestingCategory(true)
+    suggestCategoryForImage(previewUrl)
+      .then((suggested) => {
+        if (suggested) setCategory(suggested)
+      })
+      .finally(() => setSuggestingCategory(false))
+  }, [previewUrl, step])
+
+  const handleSuggestCategory = () => {
+    if (!previewUrl) return
+    setSuggestingCategory(true)
+    suggestCategoryForImage(previewUrl)
+      .then((suggested) => {
+        if (suggested) setCategory(suggested)
+      })
+      .finally(() => setSuggestingCategory(false))
   }
 
   const handleSave = () => {
@@ -110,7 +132,18 @@ export function AddItem() {
             style={{ marginBottom: '1rem' }}
           />
 
-          <label className="field-label">Category</label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.4rem' }}>
+            <label className="field-label" style={{ marginBottom: 0 }}>Category</label>
+            <button
+              type="button"
+              className="btn btn-ghost"
+              style={{ fontSize: '0.8rem' }}
+              onClick={handleSuggestCategory}
+              disabled={suggestingCategory}
+            >
+              {suggestingCategory ? 'Suggesting…' : 'Suggest with AI'}
+            </button>
+          </div>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as WardrobeCategory)}

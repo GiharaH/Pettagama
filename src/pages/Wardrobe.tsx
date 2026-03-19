@@ -63,7 +63,7 @@ export function Wardrobe() {
 function ItemCard({ item }: { item: WardrobeItem }) {
   return (
     <Link
-      to={`/wardrobe?item=${item.id}`}
+      to={`/wardrobe/edit/${item.id}`}
       className="card"
       style={{ padding: 0, overflow: 'hidden', textDecoration: 'none', color: 'inherit' }}
     >
