@@ -15,26 +15,16 @@ export function suggestOutfits(
 
   const needOuterwear = weather.tempBand === 'cold' || weather.tempBand === 'mild'
   const outfits: Outfit[] = []
-  const used = new Set<string>()
+  if (tops.length === 0 || bottoms.length === 0) return outfits
 
-  for (let n = 0; n < count && n < 20; n++) {
-    const top = pickOne(tops, used)
-    const bottom = pickOne(bottoms, used)
-    if (!top || !bottom) break
-
-    used.add(top.id)
-    used.add(bottom.id)
-
-    let out: WardrobeItem | undefined
-    if (needOuterwear && outerwear.length > 0) {
-      out = pickOne(outerwear, used)
-      if (out) used.add(out.id)
-    }
-
-    const shoe = pickOne(footwear, used)
-    if (shoe) used.add(shoe.id)
-
-    const acc = accessories.length > 0 ? [pickOne(accessories, used)].filter(Boolean) as WardrobeItem[] : []
+  // Create up to `count` outfit combinations while allowing item reuse.
+  // This guarantees users get 3 suggestions when the base wardrobe is small.
+  for (let n = 0; n < count; n++) {
+    const top = tops[n % tops.length]
+    const bottom = bottoms[(n + Math.floor(n / Math.max(1, tops.length))) % bottoms.length]
+    const out = needOuterwear && outerwear.length > 0 ? outerwear[n % outerwear.length] : undefined
+    const shoe = footwear.length > 0 ? footwear[n % footwear.length] : undefined
+    const acc = accessories.length > 0 ? [accessories[n % accessories.length]] : []
 
     outfits.push({
       id: `outfit-${Date.now()}-${n}-${Math.random().toString(36).slice(2, 8)}`,
@@ -49,10 +39,4 @@ export function suggestOutfits(
   }
 
   return outfits
-}
-
-function pickOne<T extends { id: string }>(arr: T[], used: Set<string>): T | undefined {
-  const available = arr.filter((x) => !used.has(x.id))
-  if (available.length === 0) return undefined
-  return available[Math.floor(Math.random() * available.length)]
 }

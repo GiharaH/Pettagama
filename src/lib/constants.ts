@@ -67,14 +67,11 @@ export const SEASONS = [
 
 export const ALL_CATEGORIES = Object.keys(CATEGORY_LABELS) as WardrobeCategory[]
 
-/** Nice-to-have clothing suggestions shown after outfit generation, with sample image URLs */
-const PLACEHOLDER = (text: string) =>
-  `https://placehold.co/96x120/f5e7de/54311a?text=${encodeURIComponent(text)}`
-
+/** Nice-to-have clothing suggestions shown after outfit generation, with inspiration photos */
 export const NICE_TO_HAVE_SUGGESTIONS: { title: string; imageUrl: string }[] = [
-  { title: 'Neutral belt', imageUrl: PLACEHOLDER('Belt') },
-  { title: 'Statement earrings', imageUrl: PLACEHOLDER('Earrings') },
-  { title: 'Classic watch', imageUrl: PLACEHOLDER('Watch') },
-  { title: 'Scarf or stole', imageUrl: PLACEHOLDER('Scarf') },
-  { title: 'Structured bag', imageUrl: PLACEHOLDER('Bag') },
+  { title: 'Neutral belt', imageUrl: 'https://source.unsplash.com/featured/400x520/?fashion,belt,accessory' },
+  { title: 'Statement earrings', imageUrl: 'https://source.unsplash.com/featured/400x520/?earrings,jewelry,fashion' },
+  { title: 'Classic watch', imageUrl: 'https://source.unsplash.com/featured/400x520/?watch,fashion,accessory' },
+  { title: 'Scarf or stole', imageUrl: 'https://source.unsplash.com/featured/400x520/?scarf,fashion,style' },
+  { title: 'Structured bag', imageUrl: 'https://source.unsplash.com/featured/400x520/?handbag,fashion,bag' },
 ]
