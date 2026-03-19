@@ -135,6 +135,17 @@ export interface UserProfile {
   onboardingComplete: boolean
 }
 
+export type Gender = 'female' | 'male' | 'non_binary' | 'prefer_not_to_say'
+
+export interface UserDetails {
+  name: string
+  gender: Gender | ''
+  age: number | ''
+  heightCm: number | ''
+  weightKg: number | ''
+  profilePictureUrl: string
+}
+
 export interface WeatherState {
   temp: number
   condition: 'clear' | 'rain' | 'clouds' | 'wind' | 'snow' | 'unknown'

@@ -9,37 +9,51 @@ function tempBand(temp: number): WeatherState['tempBand'] {
   return 'hot'
 }
 
-function mapCondition(weather: { id: number }): WeatherState['condition'] {
-  const id = weather.id
-  if (id >= 200 && id < 300) return 'rain'
-  if (id >= 300 && id < 600) return 'rain'
-  if (id >= 600 && id < 700) return 'snow'
-  if (id >= 700 && id < 800) return 'wind'
-  if (id === 800) return 'clear'
-  if (id > 800) return 'clouds'
-  return 'unknown'
+/** Map Open-Meteo WMO weather code to our condition and description */
+function mapWeatherCode(code: number): { condition: WeatherState['condition']; description: string } {
+  const c = Math.round(code)
+  if (c === 0) return { condition: 'clear', description: 'Clear sky' }
+  if (c >= 1 && c <= 3) return { condition: 'clouds', description: c === 1 ? 'Mainly clear' : c === 2 ? 'Partly cloudy' : 'Overcast' }
+  if (c === 45 || c === 48) return { condition: 'clouds', description: 'Foggy' }
+  if (c >= 51 && c <= 67) return { condition: 'rain', description: c <= 57 ? 'Drizzle' : 'Rain' }
+  if (c >= 71 && c <= 77) return { condition: 'snow', description: 'Snow' }
+  if (c >= 80 && c <= 82) return { condition: 'rain', description: 'Rain showers' }
+  if (c >= 85 && c <= 86) return { condition: 'snow', description: 'Snow showers' }
+  if (c >= 95 && c <= 99) return { condition: 'rain', description: 'Thunderstorm' }
+  return { condition: 'unknown', description: 'Unknown' }
 }
 
 export async function fetchWeather(lat: number, lon: number): Promise<WeatherState> {
-  const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY
-  if (!apiKey) {
-    return {
-      temp: 22,
-      condition: 'clear',
-      description: 'Demo mode — add VITE_OPENWEATHER_API_KEY for real weather',
-      tempBand: 'mild',
-      cachedAt: Date.now(),
-    }
+  const url = new URL('https://api.open-meteo.com/v1/forecast')
+  url.searchParams.set('latitude', String(lat))
+  url.searchParams.set('longitude', String(lon))
+  url.searchParams.set('current', 'temperature_2m,weather_code')
+  url.searchParams.set('timezone', 'auto')
+
+  const res = await fetch(url.toString())
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Weather fetch failed: ${res.status} ${text}`)
   }
-  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error('Weather fetch failed')
-  const data = await res.json()
+
+  const data = await res.json() as {
+    current?: { temperature_2m?: number; weather_code?: number }
+  }
+
+  const current = data.current
+  if (!current || typeof current.temperature_2m !== 'number') {
+    throw new Error('Invalid weather response')
+  }
+
+  const temp = Math.round(current.temperature_2m)
+  const code = typeof current.weather_code === 'number' ? current.weather_code : 0
+  const { condition, description } = mapWeatherCode(code)
+
   return {
-    temp: Math.round(data.main.temp),
-    condition: mapCondition(data.weather[0]),
-    description: data.weather[0].description ?? '',
-    tempBand: tempBand(data.main.temp),
+    temp,
+    condition,
+    description,
+    tempBand: tempBand(current.temperature_2m),
     cachedAt: Date.now(),
   }
 }

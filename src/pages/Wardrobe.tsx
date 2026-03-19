@@ -23,7 +23,7 @@ export function Wardrobe() {
   }))
 
   return (
-    <div className="page">
+    <div className="page page--wardrobe">
       <BrandHeader eyebrow="Your closet" title="Wardrobe" tagline="Let your wardrobe think for you." />
       <div className="divider" style={{ marginLeft: 'auto', marginRight: 'auto' }} />
 
@@ -33,7 +33,7 @@ export function Wardrobe() {
 
       {items.length === 0 ? (
         <div className="card card-accent-teal-mid" style={{ textAlign: 'center', padding: '2rem' }}>
-          <p style={{ marginBottom: '1rem' }}>No items yet. Add your first piece to start getting outfit suggestions.</p>
+          <p style={{ marginBottom: '1rem', color: 'var(--black)' }}>No items yet. Add your first piece to start getting outfit suggestions.</p>
           <Link to="/wardrobe/add" className="btn btn-secondary">
             Add your first item
           </Link>

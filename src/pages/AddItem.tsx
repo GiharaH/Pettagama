@@ -59,7 +59,7 @@ export function AddItem() {
   }
 
   return (
-    <div className="page">
+    <div className="page page--wardrobe">
       <BrandHeader
         eyebrow="Add to wardrobe"
         title={step === 'upload' ? 'New item' : 'Details'}
@@ -69,7 +69,7 @@ export function AddItem() {
 
       {step === 'upload' && (
         <>
-          <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#3a2010' }}>
+          <p style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>
             Photograph or upload a clear image of the item. We&apos;ll use it in your catalogue and outfit suggestions.
           </p>
           <input

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { saveProfile, getProfile } from '@/lib/storage'
+import { saveProfile, getProfile, saveUserDetails, getUserDetails } from '@/lib/storage'
 import type { UserProfile, BodyShape, StylePreference } from '@/types'
 import { BODY_SHAPES } from '@/lib/constants'
 import { BrandHeader } from '@/components/BrandHeader'
@@ -47,8 +47,13 @@ const defaultProfile: UserProfile = {
 
 export function Onboarding() {
   const existing = getProfile()
+  const existingDetails = getUserDetails()
   const [step, setStep] = useState(1)
   const [bodyShape, setBodyShape] = useState<BodyShape | null>(existing?.bodyShape ?? null)
+  const [name, setName] = useState(existingDetails.name || '')
+  const [age, setAge] = useState<string>(existingDetails.age !== '' && existingDetails.age !== undefined ? String(existingDetails.age) : '')
+  const [heightCm, setHeightCm] = useState<string>(existingDetails.heightCm !== '' && existingDetails.heightCm !== undefined ? String(existingDetails.heightCm) : '')
+  const [weightKg, setWeightKg] = useState<string>(existingDetails.weightKg !== '' && existingDetails.weightKg !== undefined ? String(existingDetails.weightKg) : '')
   const [stylePreference, setStylePreference] = useState<StylePreference>(existing?.stylePreference ?? 'casual')
   const [locationGranted, setLocationGranted] = useState(existing?.locationGranted ?? false)
   const [locating, setLocating] = useState(false)
@@ -82,22 +87,29 @@ export function Onboarding() {
       locationGranted,
       onboardingComplete: true,
     }
+    saveUserDetails({
+      name: name.trim(),
+      gender: existingDetails.gender ?? '',
+      age: age === '' ? '' : parseInt(age, 10) || '',
+      heightCm: heightCm === '' ? '' : parseFloat(heightCm) || '',
+      weightKg: weightKg === '' ? '' : parseFloat(weightKg) || '',
+      profilePictureUrl: existingDetails.profilePictureUrl ?? '',
+    })
+    const doNavigate = () => {
+      saveProfile(profile)
+      navigate('/', { replace: true })
+    }
     if (locationGranted && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           profile.lat = pos.coords.latitude
           profile.lon = pos.coords.longitude
-          saveProfile(profile)
-          navigate('/', { replace: true })
+          doNavigate()
         },
-        () => {
-          saveProfile(profile)
-          navigate('/', { replace: true })
-        }
+        doNavigate
       )
     } else {
-      saveProfile(profile)
-      navigate('/', { replace: true })
+      doNavigate()
     }
   }
 
@@ -147,6 +159,67 @@ export function Onboarding() {
       {step === 2 && (
         <>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: 'var(--brown-dark)', marginBottom: '1rem' }}>
+            About you
+          </h2>
+          <p style={{ fontSize: '0.9rem', color: '#3a2010', marginBottom: '1.25rem' }}>
+            This helps us personalize your experience. You can edit these anytime in Profile.
+          </p>
+          <label className="field-label" htmlFor="onboarding-name">Name</label>
+          <input
+            id="onboarding-name"
+            type="text"
+            className="field-control"
+            placeholder="Your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{ marginBottom: '1rem' }}
+          />
+          <label className="field-label" htmlFor="onboarding-age">Age (optional)</label>
+          <input
+            id="onboarding-age"
+            type="number"
+            min={1}
+            max={120}
+            className="field-control"
+            placeholder="Age"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            style={{ marginBottom: '1rem' }}
+          />
+          <label className="field-label" htmlFor="onboarding-height">Height in cm (optional)</label>
+          <input
+            id="onboarding-height"
+            type="number"
+            min={50}
+            max={250}
+            className="field-control"
+            placeholder="e.g. 165"
+            value={heightCm}
+            onChange={(e) => setHeightCm(e.target.value)}
+            style={{ marginBottom: '1rem' }}
+          />
+          <label className="field-label" htmlFor="onboarding-weight">Weight in kg (optional)</label>
+          <input
+            id="onboarding-weight"
+            type="number"
+            min={20}
+            max={300}
+            step={0.1}
+            className="field-control"
+            placeholder="e.g. 65"
+            value={weightKg}
+            onChange={(e) => setWeightKg(e.target.value)}
+            style={{ marginBottom: '1.25rem' }}
+          />
+          <button type="button" className="btn btn-primary btn-block" style={{ marginTop: '0.5rem' }} onClick={() => setStep(3)}>
+            Continue
+          </button>
+        </>
+      )}
+
+      {step === 3 && (
+        <>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: 'var(--brown-dark)', marginBottom: '1rem' }}>
             Style preference
           </h2>
           <p style={{ fontSize: '0.9rem', color: '#3a2010', marginBottom: '1.25rem' }}>
@@ -168,13 +241,13 @@ export function Onboarding() {
               </button>
             ))}
           </div>
-          <button type="button" className="btn btn-primary btn-block" style={{ marginTop: '2rem' }} onClick={() => setStep(3)}>
+          <button type="button" className="btn btn-primary btn-block" style={{ marginTop: '2rem' }} onClick={() => setStep(4)}>
             Continue
           </button>
         </>
       )}
 
-      {step === 3 && (
+      {step === 4 && (
         <>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: 'var(--brown-dark)', marginBottom: '1rem' }}>
             Weather for outfit suggestions
@@ -191,19 +264,19 @@ export function Onboarding() {
             {locating ? 'Getting location…' : locationGranted ? '✓ Location allowed' : 'Allow location'}
           </button>
           {!locationGranted && !locating && (
-            <button type="button" className="btn btn-ghost btn-block" style={{ marginTop: '0.5rem' }} onClick={() => setStep(4)}>
+            <button type="button" className="btn btn-ghost btn-block" style={{ marginTop: '0.5rem' }} onClick={() => setStep(5)}>
               Skip for now
             </button>
           )}
           {locationGranted && (
-            <button type="button" className="btn btn-primary btn-block" style={{ marginTop: '1rem' }} onClick={() => setStep(4)}>
+            <button type="button" className="btn btn-primary btn-block" style={{ marginTop: '1rem' }} onClick={() => setStep(5)}>
               Continue
             </button>
           )}
         </>
       )}
 
-      {step === 4 && (
+      {step === 5 && (
         <>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.15rem', color: 'var(--brown-dark)', marginBottom: '1rem' }}>
             You&apos;re all set

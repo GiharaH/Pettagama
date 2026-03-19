@@ -5,6 +5,7 @@ import { Home } from '@/pages/Home'
 import { Wardrobe } from '@/pages/Wardrobe'
 import { AddItem } from '@/pages/AddItem'
 import { Favourites } from '@/pages/Favourites'
+import { Profile } from '@/pages/Profile'
 import { getProfile } from '@/lib/storage'
 
 function RequireOnboarding({ children }: { children: React.ReactNode }) {
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="wardrobe" element={<Wardrobe />} />
           <Route path="wardrobe/add" element={<AddItem />} />
           <Route path="favourites" element={<Favourites />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

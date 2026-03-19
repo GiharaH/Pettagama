@@ -1,10 +1,34 @@
-import type { UserProfile, WardrobeItem, FavouriteOutfit } from '@/types'
+import type { UserProfile, WardrobeItem, FavouriteOutfit, UserDetails } from '@/types'
 
 const KEYS = {
   PROFILE: 'pettagama_profile',
   WARDROBE: 'pettagama_wardrobe',
   FAVOURITES: 'pettagama_favourites',
+  USER_DETAILS: 'pettagama_user_details',
 } as const
+
+const defaultUserDetails: UserDetails = {
+  name: '',
+  gender: '',
+  age: '',
+  heightCm: '',
+  weightKg: '',
+  profilePictureUrl: '',
+}
+
+export function getUserDetails(): UserDetails {
+  try {
+    const raw = localStorage.getItem(KEYS.USER_DETAILS)
+    if (!raw) return { ...defaultUserDetails }
+    return { ...defaultUserDetails, ...JSON.parse(raw) } as UserDetails
+  } catch {
+    return { ...defaultUserDetails }
+  }
+}
+
+export function saveUserDetails(details: UserDetails): void {
+  localStorage.setItem(KEYS.USER_DETAILS, JSON.stringify(details))
+}
 
 export function getProfile(): UserProfile | null {
   try {
