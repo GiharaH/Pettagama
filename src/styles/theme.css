@@ -103,7 +103,7 @@ textarea {
   background-image: url(/wallpaper-home.png);
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: center;
+  background-position: left bottom;
   background-attachment: scroll;
   min-height: 100vh;
   color: var(--black);
@@ -143,6 +143,35 @@ textarea {
 }
 
 .page--wardrobe .divider {
+  background: rgba(245, 231, 222, 0.6);
+}
+
+.page--favourites {
+  background-image: url(/wallpaper-favourites.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: scroll;
+  min-height: 100vh;
+  color: var(--cream);
+}
+
+.page--favourites .brand-header__wordmark,
+.page--favourites .page-title,
+.page--favourites .page-eyebrow,
+.page--favourites .brand-tagline {
+  color: var(--cream);
+}
+
+.page--favourites a {
+  color: var(--cream);
+}
+
+.page--favourites a:hover {
+  color: var(--white);
+}
+
+.page--favourites .divider {
   background: rgba(245, 231, 222, 0.6);
 }
 

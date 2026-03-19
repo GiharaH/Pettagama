@@ -7,7 +7,7 @@ export function Favourites() {
   const favourites = getFavourites()
 
   return (
-    <div className="page">
+    <div className="page page--favourites">
       <BrandHeader eyebrow="Saved" title="Favourites" tagline="Let your wardrobe think for you." />
       <div className="divider" style={{ marginLeft: 'auto', marginRight: 'auto' }} />
 
