@@ -67,12 +67,8 @@ function ItemCard({ item }: { item: WardrobeItem }) {
       className="card"
       style={{ padding: 0, overflow: 'hidden', textDecoration: 'none', color: 'inherit' }}
     >
-      <div style={{ aspectRatio: '1', background: 'var(--cream)', overflow: 'hidden' }}>
-        <img
-          src={item.imageUrl}
-          alt={item.name}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
+      <div className="clothing-img-wrap" style={{ aspectRatio: '1' }}>
+        <img src={item.imageUrl} alt={item.name} />
       </div>
       <div style={{ padding: '0.5rem' }}>
         <div style={{ fontSize: '0.8rem', fontWeight: 400, color: 'var(--brown-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

@@ -10,20 +10,8 @@ interface OutfitCardProps {
 function ItemThumb({ item, label }: { item: { id: string; imageUrl: string; name: string }; label: string }) {
   return (
     <div style={{ flex: '1 1 0', minWidth: 0 }}>
-      <div
-        style={{
-          aspectRatio: '1',
-          borderRadius: 4,
-          overflow: 'hidden',
-          background: 'var(--cream)',
-          border: '1px solid rgba(84,49,26,0.1)',
-        }}
-      >
-        <img
-          src={item.imageUrl}
-          alt=""
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
+      <div className="clothing-img-wrap" style={{ aspectRatio: '1', borderRadius: 4 }}>
+        <img src={item.imageUrl} alt="" />
       </div>
       <div style={{ fontSize: '0.7rem', color: 'var(--brown-mid)', marginTop: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {label}

@@ -69,8 +69,11 @@ export function AddItem() {
 
       {step === 'upload' && (
         <>
-          <p style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>
+          <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>
             Photograph or upload a clear image of the item. We&apos;ll use it in your catalogue and outfit suggestions.
+          </p>
+          <p style={{ marginBottom: '1rem', fontSize: '0.85rem', color: 'var(--brown-mid)', fontStyle: 'italic' }}>
+            For best results, use a photo on a <strong>white background</strong> with the item <strong>hanging on a hanger</strong>.
           </p>
           <input
             ref={fileInput}
@@ -93,8 +96,8 @@ export function AddItem() {
 
       {step === 'details' && previewUrl && (
         <>
-          <div style={{ marginBottom: '1.25rem', borderRadius: 4, overflow: 'hidden', background: 'var(--cream)', border: '1px solid rgba(84,49,26,0.12)', aspectRatio: '1', maxWidth: 280, margin: '0 auto' }}>
-            <img src={previewUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div className="clothing-img-wrap" style={{ marginBottom: '1.25rem', marginLeft: 'auto', marginRight: 'auto', maxWidth: 280, aspectRatio: '3/4' }}>
+            <img src={previewUrl} alt="Preview" />
           </div>
 
           <label className="field-label">Name (optional)</label>
