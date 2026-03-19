@@ -33,12 +33,16 @@ export function Wishlist() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
                 gap: '0.75rem',
                 flexWrap: 'wrap',
                 background: '#fff',
               }}
             >
+              {item.imageUrl && (
+                <div style={{ width: 72, height: 90, flexShrink: 0, background: '#fff', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(84,49,26,0.12)' }}>
+                  <img src={item.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              )}
               <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                 <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 600 }}>
                   {item.title}

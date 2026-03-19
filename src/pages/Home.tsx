@@ -75,11 +75,12 @@ export function Home() {
     saveFavourites(favs)
   }
 
-  const handleAddToWishlist = (title: string) => {
+  const handleAddToWishlist = (title: string, imageUrl?: string) => {
     const list = getWishlist()
     list.push({
       id: `wish-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
       title,
+      imageUrl,
       addedAt: new Date().toISOString(),
     })
     saveWishlist(list)
@@ -170,16 +171,24 @@ export function Home() {
               Complete the look — add any of these to your wishlist for later.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {niceToHave.map((title) => (
-                <div key={title} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)' }}>{title}</span>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => handleAddToWishlist(title)}
-                  >
-                    Add to shopping inspiration
-                  </button>
+              {niceToHave.map((item) => (
+                <div key={item.title} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <div style={{ width: 96, height: 120, flexShrink: 0, background: '#fff', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(84,49,26,0.12)' }}>
+                    <img src={item.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ flex: '1 1 120px', minWidth: 0 }}>
+                    <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 600 }}>
+                      {item.title}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ marginTop: '0.5rem' }}
+                      onClick={() => handleAddToWishlist(item.title, item.imageUrl)}
+                    >
+                      Add to wishlist
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
