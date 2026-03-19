@@ -8,7 +8,8 @@ import { OCCASIONS } from '@/lib/constants'
 import type { WeatherState, Outfit, Occasion } from '@/types'
 import { CATEGORY_TO_GROUP } from '@/types'
 import { OutfitCard } from '@/components/OutfitCard'
-import { saveFavourites, getFavourites } from '@/lib/storage'
+import { saveFavourites, getFavourites, getWishlist, saveWishlist } from '@/lib/storage'
+import { NICE_TO_HAVE_SUGGESTIONS } from '@/lib/constants'
 import { BrandHeader } from '@/components/BrandHeader'
 import '@/styles/theme.css'
 
@@ -74,7 +75,18 @@ export function Home() {
     saveFavourites(favs)
   }
 
+  const handleAddToWishlist = (title: string) => {
+    const list = getWishlist()
+    list.push({
+      id: `wish-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      title,
+      addedAt: new Date().toISOString(),
+    })
+    saveWishlist(list)
+  }
+
   const displayName = userDetails.name?.trim() || null
+  const niceToHave = NICE_TO_HAVE_SUGGESTIONS.slice(0, 3)
 
   return (
     <div className="page page--home">
@@ -138,20 +150,47 @@ export function Home() {
       )}
 
       {outfits.length > 0 && (
-        <section style={{ marginTop: '2rem' }} aria-label="Suggested outfits">
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--brown-dark)', marginBottom: '1rem' }}>
-            Your outfits
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {outfits.map((outfit) => (
-              <OutfitCard key={outfit.id} outfit={outfit} onSave={() => handleSaveFavourite(outfit)} />
-            ))}
-          </div>
-        </section>
+        <>
+          <section style={{ marginTop: '2rem' }} aria-label="Suggested outfits">
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--brown-dark)', marginBottom: '1rem' }}>
+              Your outfits
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {outfits.map((outfit) => (
+                <OutfitCard key={outfit.id} outfit={outfit} onSave={() => handleSaveFavourite(outfit)} />
+              ))}
+            </div>
+          </section>
+
+          <section style={{ marginTop: '2rem' }} aria-label="Shopping inspiration">
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--brown-dark)', marginBottom: '0.75rem' }}>
+              Nice to have
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: 'var(--brown-mid)', marginBottom: '1rem' }}>
+              Complete the look — add any of these to your wishlist for later.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {niceToHave.map((title) => (
+                <div key={title} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)' }}>{title}</span>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => handleAddToWishlist(title)}
+                  >
+                    Add to shopping inspiration
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        </>
       )}
 
       <p style={{ marginTop: '1.5rem', fontSize: '0.9rem' }}>
         <Link to="/favourites">View saved outfits (Favourites)</Link>
+        {' · '}
+        <Link to="/wishlist">Wishlist</Link>
       </p>
     </div>
   )

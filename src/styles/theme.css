@@ -193,6 +193,36 @@ textarea {
   color: var(--brown-dark);
 }
 
+.page--wishlist {
+  background-image: url(/wallpaper-wishlist.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: scroll;
+  min-height: 100vh;
+  color: var(--black);
+}
+
+.page--wishlist .brand-header__wordmark,
+.page--wishlist .page-title {
+  color: #1e3a47;
+}
+
+.page--wishlist .page-eyebrow,
+.page--wishlist .brand-tagline {
+  color: var(--brown-dark);
+}
+
+.page--wishlist .divider {
+  background: var(--brown-mid);
+}
+
+.page--wishlist .card {
+  background: #fff;
+  color: var(--black);
+  border: 1px solid rgba(84, 49, 26, 0.12);
+}
+
 .page-title {
   font-family: var(--font-serif);
   font-size: clamp(1.95rem, 4.5vw, 2.5rem);

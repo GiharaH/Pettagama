@@ -66,3 +66,12 @@ export const SEASONS = [
 ] as const
 
 export const ALL_CATEGORIES = Object.keys(CATEGORY_LABELS) as WardrobeCategory[]
+
+/** Nice-to-have clothing suggestions shown after outfit generation (occasion can tailor these later) */
+export const NICE_TO_HAVE_SUGGESTIONS: string[] = [
+  'Neutral belt',
+  'Statement earrings',
+  'Classic watch',
+  'Scarf or stole',
+  'Structured bag',
+]

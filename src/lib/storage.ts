@@ -1,10 +1,11 @@
-import type { UserProfile, WardrobeItem, FavouriteOutfit, UserDetails } from '@/types'
+import type { UserProfile, WardrobeItem, FavouriteOutfit, UserDetails, WishlistItem } from '@/types'
 
 const KEYS = {
   PROFILE: 'pettagama_profile',
   WARDROBE: 'pettagama_wardrobe',
   FAVOURITES: 'pettagama_favourites',
   USER_DETAILS: 'pettagama_user_details',
+  WISHLIST: 'pettagama_wishlist',
 } as const
 
 const defaultUserDetails: UserDetails = {
@@ -70,4 +71,18 @@ export function getFavourites(): FavouriteOutfit[] {
 
 export function saveFavourites(favourites: FavouriteOutfit[]): void {
   localStorage.setItem(KEYS.FAVOURITES, JSON.stringify(favourites))
+}
+
+export function getWishlist(): WishlistItem[] {
+  try {
+    const raw = localStorage.getItem(KEYS.WISHLIST)
+    if (!raw) return []
+    return JSON.parse(raw) as WishlistItem[]
+  } catch {
+    return []
+  }
+}
+
+export function saveWishlist(items: WishlistItem[]): void {
+  localStorage.setItem(KEYS.WISHLIST, JSON.stringify(items))
 }

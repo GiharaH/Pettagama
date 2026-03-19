@@ -26,9 +26,12 @@ export function AddItem() {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const url = URL.createObjectURL(file)
-    setPreviewUrl(url)
-    setStep('details')
+    const reader = new FileReader()
+    reader.onload = () => {
+      setPreviewUrl(reader.result as string)
+      setStep('details')
+    }
+    reader.readAsDataURL(file)
   }
 
   useEffect(() => {
@@ -72,7 +75,6 @@ export function AddItem() {
 
   const handleBack = () => {
     if (step === 'details') {
-      if (previewUrl) URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
       setStep('upload')
     } else {

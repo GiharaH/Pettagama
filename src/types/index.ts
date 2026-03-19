@@ -158,3 +158,11 @@ export interface FavouriteOutfit {
   outfit: Outfit
   savedAt: string
 }
+
+export interface WishlistItem {
+  id: string
+  title: string
+  note?: string
+  imageUrl?: string
+  addedAt: string
+}
