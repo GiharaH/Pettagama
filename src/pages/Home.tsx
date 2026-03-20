@@ -8,9 +8,9 @@ import { OCCASIONS } from '@/lib/constants'
 import type { WeatherState, Outfit, Occasion } from '@/types'
 import { CATEGORY_TO_GROUP } from '@/types'
 import { OutfitCard } from '@/components/OutfitCard'
-import { saveFavourites, getFavourites, getWishlist, saveWishlist } from '@/lib/storage'
-import { NICE_TO_HAVE_SUGGESTIONS } from '@/lib/constants'
+import { saveFavourites, getFavourites } from '@/lib/storage'
 import { BrandHeader } from '@/components/BrandHeader'
+import { buildOutfitImprovements, type OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
 import '@/styles/theme.css'
 
 export function Home() {
@@ -21,6 +21,7 @@ export function Home() {
   const [occasion, setOccasion] = useState<Occasion>('casual')
   const [outfits, setOutfits] = useState<Outfit[]>([])
   const [suggesting, setSuggesting] = useState(false)
+  const [improvementsByOutfitId, setImprovementsByOutfitId] = useState<Record<string, OutfitImprovementSuggestion>>({})
 
   const wardrobe = getWardrobe()
   const hasEnough =
@@ -60,10 +61,17 @@ export function Home() {
       tempBand: 'mild' as const,
       cachedAt: Date.now(),
     }
+    setOutfits([])
+    setImprovementsByOutfitId({})
     setSuggesting(true)
     setTimeout(() => {
       const suggested = suggestOutfits(wardrobe, weatherToUse, occasion, 3)
       setOutfits(suggested)
+      const map: Record<string, OutfitImprovementSuggestion> = {}
+      for (const o of suggested) {
+        map[o.id] = buildOutfitImprovements(wardrobe, o, weatherToUse, occasion)
+      }
+      setImprovementsByOutfitId(map)
       setSuggesting(false)
     }, 600)
   }
@@ -75,19 +83,7 @@ export function Home() {
     saveFavourites(favs)
   }
 
-  const handleAddToWishlist = (title: string, imageUrl?: string) => {
-    const list = getWishlist()
-    list.push({
-      id: `wish-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      title,
-      imageUrl,
-      addedAt: new Date().toISOString(),
-    })
-    saveWishlist(list)
-  }
-
   const displayName = userDetails.name?.trim() || null
-  const niceToHave = NICE_TO_HAVE_SUGGESTIONS.slice(0, 3)
 
   return (
     <div className="page page--home">
@@ -158,38 +154,12 @@ export function Home() {
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {outfits.map((outfit) => (
-                <OutfitCard key={outfit.id} outfit={outfit} onSave={() => handleSaveFavourite(outfit)} />
-              ))}
-            </div>
-          </section>
-
-          <section style={{ marginTop: '2rem' }} aria-label="Shopping inspiration">
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--brown-dark)', marginBottom: '0.75rem' }}>
-              Nice to have
-            </h2>
-            <p style={{ fontSize: '0.9rem', color: 'var(--brown-mid)', marginBottom: '1rem' }}>
-              Complete the look — add any of these to your wishlist for later.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {niceToHave.map((item) => (
-                <div key={item.title} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <div style={{ width: 96, height: 120, flexShrink: 0, background: '#fff', borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(84,49,26,0.12)' }}>
-                    <img src={item.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                  <div style={{ flex: '1 1 120px', minWidth: 0 }}>
-                    <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 600 }}>
-                      {item.title}
-                    </div>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      style={{ marginTop: '0.5rem' }}
-                      onClick={() => handleAddToWishlist(item.title, item.imageUrl)}
-                    >
-                      Add to wishlist
-                    </button>
-                  </div>
-                </div>
+                <OutfitCard
+                  key={outfit.id}
+                  outfit={outfit}
+                  improvements={improvementsByOutfitId[outfit.id]}
+                  onSave={() => handleSaveFavourite(outfit)}
+                />
               ))}
             </div>
           </section>
