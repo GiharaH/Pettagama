@@ -49,39 +49,28 @@ export function OutfitCard({ outfit, onSave, improvements }: OutfitCardProps) {
       )}
 
       {improvements && (
-        <div
-          style={{
-            marginTop: '0.75rem',
-            padding: '0.75rem',
-            border: '1px solid rgba(84, 49, 26, 0.12)',
-            borderRadius: 4,
-            background: 'rgba(245, 231, 222, 0.35)',
-          }}
-        >
-          <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 700, marginBottom: '0.5rem' }}>
+        <div style={{ marginTop: '0.75rem' }}>
+          <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 700, marginBottom: '0.35rem' }}>
             Improve this outfit
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+          <div style={{ fontSize: '0.85rem', color: 'var(--brown-mid)', marginBottom: '0.55rem' }}>
+            {improvements.overall_explanation.trim()}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {improvements.directions.map((d) => (
-              <div
-                key={d.title}
-                style={{
-                  padding: '0.6rem',
-                  borderRadius: 4,
-                  background: 'rgba(255, 250, 246, 0.75)',
-                }}
-              >
+              <div key={d.title}>
                 <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 700 }}>
                   {d.title}
                 </div>
                 <div style={{ color: 'var(--brown-mid)', fontSize: '0.85rem', fontStyle: 'italic', marginTop: '0.15rem' }}>
                   {d.style_archetype}
                 </div>
-                <div style={{ marginTop: '0.4rem', color: 'var(--brown-mid)', fontSize: '0.85rem' }}>
+                <div style={{ marginTop: '0.35rem', color: 'var(--brown-mid)', fontSize: '0.85rem' }}>
                   {d.actions.map((a, idx) => (
-                    <div key={`${d.title}-${idx}`} style={{ marginTop: idx === 0 ? 0 : '0.25rem' }}>
-                      <strong style={{ color: 'var(--brown-dark)' }}>{a.type === 'add' ? 'Add' : 'Swap'}</strong>: {a.item}
+                    <div key={`${d.title}-${idx}`} style={{ marginTop: idx === 0 ? 0 : '0.22rem' }}>
+                      <strong style={{ color: 'var(--brown-dark)' }}>{a.type === 'add' ? 'Add' : 'Swap'}</strong> {a.source === 'missing' ? '(missing)' : ''}: {a.item}
                     </div>
                   ))}
                 </div>
@@ -90,15 +79,11 @@ export function OutfitCard({ outfit, onSave, improvements }: OutfitCardProps) {
           </div>
 
           {improvements.missing_items.length > 0 && (
-            <div style={{ marginTop: '0.65rem', fontSize: '0.85rem', color: 'var(--brown-mid)' }}>
+            <div style={{ marginTop: '0.55rem', fontSize: '0.85rem', color: 'var(--brown-mid)' }}>
               <strong style={{ color: 'var(--brown-dark)' }}>Missing items:</strong>{' '}
               {improvements.missing_items.map((m) => m.item).join(', ')}
             </div>
           )}
-
-          <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--brown-mid)' }}>
-            {improvements.overall_explanation.trim()}
-          </div>
         </div>
       )}
     </div>
