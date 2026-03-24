@@ -8,6 +8,7 @@
   --black: #260701;
   --brown-deeper: #1a0500;
   --white: #fffaf6;
+  --burgundy: #722f37;
 
   --font-serif: 'IM Fell English', Georgia, serif;
   --font-serif-sc: 'IM Fell English SC', Georgia, serif;
@@ -125,11 +126,23 @@ textarea {
   color: var(--cream);
 }
 
-.page--home.page--home-suggested .brand-header__wordmark,
-.page--home.page--home-suggested .page-title,
-.page--home.page--home-suggested .page-eyebrow,
+.page--home.page--home-suggested .brand-header__wordmark {
+  color: var(--burgundy);
+}
+
 .page--home.page--home-suggested .brand-tagline {
+  color: var(--black);
+}
+
+.page--home.page--home-suggested .page-title,
+.page--home.page--home-suggested .page-eyebrow {
   color: var(--cream);
+}
+
+.page--home.page--home-suggested .brand-header__meta {
+  background: rgba(255, 250, 246, 0.92);
+  padding: 0.65rem 1rem 0.85rem;
+  border-radius: var(--radius-md);
 }
 
 .page--home.page--home-suggested .divider {
@@ -175,11 +188,23 @@ textarea {
   color: var(--cream);
 }
 
-.page--wardrobe .brand-header__wordmark,
-.page--wardrobe .page-title,
-.page--wardrobe .page-eyebrow,
+.page--wardrobe .brand-header__wordmark {
+  color: var(--burgundy);
+}
+
 .page--wardrobe .brand-tagline {
+  color: var(--black);
+}
+
+.page--wardrobe .page-title,
+.page--wardrobe .page-eyebrow {
   color: var(--cream);
+}
+
+.page--wardrobe .brand-header__meta {
+  background: rgba(255, 250, 246, 0.92);
+  padding: 0.65rem 1rem 0.85rem;
+  border-radius: var(--radius-md);
 }
 
 .page--wardrobe a {
@@ -210,7 +235,7 @@ textarea {
 }
 
 .page--favourites .brand-header__wordmark {
-  color: #d4b896;
+  color: var(--burgundy);
 }
 
 .page--favourites .page-eyebrow {
@@ -222,7 +247,13 @@ textarea {
 }
 
 .page--favourites .brand-tagline {
-  color: var(--brown-mid);
+  color: var(--black);
+}
+
+.page--favourites .brand-header__meta {
+  background: rgba(255, 250, 246, 0.92);
+  padding: 0.65rem 1rem 0.85rem;
+  border-radius: var(--radius-md);
 }
 
 .page--favourites a {
@@ -257,13 +288,19 @@ textarea {
   color: var(--black);
 }
 
-.page--wishlist .brand-header__wordmark,
+.page--wishlist .brand-header__wordmark {
+  color: var(--burgundy);
+}
+
+.page--wishlist .brand-tagline {
+  color: var(--black);
+}
+
 .page--wishlist .page-title {
   color: #1e3a47;
 }
 
-.page--wishlist .page-eyebrow,
-.page--wishlist .brand-tagline {
+.page--wishlist .page-eyebrow {
   color: var(--brown-dark);
 }
 
@@ -346,7 +383,7 @@ textarea {
   font-size: 2rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: var(--brown-dark);
+  color: var(--burgundy);
   margin-top: 0.5rem;
 }
 
@@ -356,7 +393,7 @@ textarea {
 
 .brand-tagline {
   margin-top: 0.5rem;
-  color: var(--brown-deeper);
+  color: var(--black);
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 1.3rem;
