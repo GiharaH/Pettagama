@@ -500,3 +500,159 @@ textarea {
 .nav-label {
   text-transform: uppercase;
 }
+
+/* Before / after dummy — “Enhance your look” */
+.outfit-enhance-dummy {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid rgba(84, 49, 26, 0.12);
+}
+
+.outfit-enhance-dummy__row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.outfit-dummy__column {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 168px;
+}
+
+.outfit-dummy__label {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  text-align: center;
+}
+
+.outfit-dummy__label--before {
+  color: var(--brown-mid);
+}
+
+.outfit-dummy__label--after {
+  color: var(--teal-dark);
+}
+
+.outfit-dummy__canvas {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  aspect-ratio: 100 / 188;
+  max-height: 220px;
+}
+
+.outfit-dummy__silhouette-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.outfit-dummy__patch {
+  position: absolute;
+  object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(38, 7, 1, 0.12);
+  z-index: 1;
+}
+
+.outfit-dummy__patch--top {
+  top: 19%;
+  left: 24%;
+  width: 52%;
+  height: 24%;
+  z-index: 1;
+}
+
+.outfit-dummy__patch--bottom {
+  top: 44%;
+  left: 22%;
+  width: 56%;
+  height: 30%;
+  z-index: 1;
+}
+
+.outfit-dummy__patch--shoe {
+  bottom: 6%;
+  left: 18%;
+  width: 64%;
+  height: 14%;
+  z-index: 2;
+}
+
+.outfit-dummy__patch--outer {
+  top: 17%;
+  left: 20%;
+  width: 60%;
+  height: 38%;
+  z-index: 3;
+}
+
+.outfit-dummy__frame-after {
+  border: 2px dashed var(--teal-mid);
+  border-radius: var(--radius-md);
+  padding: 0.35rem;
+  background: rgba(255, 250, 246, 0.85);
+}
+
+.outfit-dummy__frame-after .outfit-dummy__canvas {
+  padding-bottom: 22px;
+}
+
+.outfit-dummy__patch--add {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  z-index: 4;
+  border: 1px solid rgba(3, 94, 123, 0.35);
+}
+
+.outfit-dummy__patch--add0 {
+  top: 8%;
+  right: 4%;
+}
+
+.outfit-dummy__patch--add1 {
+  top: 26%;
+  left: 2%;
+}
+
+.outfit-dummy__patch--add2 {
+  top: 40%;
+  right: 2%;
+}
+
+.outfit-dummy__swatches {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 5;
+}
+
+.outfit-dummy__swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(84, 49, 26, 0.25);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.outfit-dummy__after-note {
+  font-size: 0.72rem;
+  color: var(--teal-dark);
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.35rem;
+  margin-bottom: 0;
+}

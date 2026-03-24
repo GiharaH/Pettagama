@@ -1,4 +1,4 @@
-import type { Occasion, Outfit, WeatherState, WardrobeItem } from '@/types'
+import type { ColourGroup, Occasion, Outfit, WeatherState, WardrobeItem } from '@/types'
 import { CATEGORY_LABELS } from '@/lib/constants'
 import { CATEGORY_TO_GROUP } from '@/types'
 
@@ -11,6 +11,10 @@ export interface ImprovementAction {
   source: ImprovementSource
   reason: string
   search_query: string
+  /** Wardrobe item thumbnail when source is wardrobe (for before/after visuals). */
+  imageUrl?: string
+  /** Colour palette for suggested “add” swatches. */
+  colourGroup?: ColourGroup
 }
 
 export interface ImprovementDirection {
@@ -68,8 +72,13 @@ function findCategoryItems(wardrobe: WardrobeItem[]) {
   return { tops, bottoms, outerwear, footwear, accessories }
 }
 
-function missingAction(item: string, reason: string, search_query: string): ImprovementAction {
-  return { type: 'add', item, source: 'missing', reason, search_query }
+function missingAction(
+  item: string,
+  reason: string,
+  search_query: string,
+  paletteHint: ColourGroup = 'neutral'
+): ImprovementAction {
+  return { type: 'add', item, source: 'missing', reason, search_query, colourGroup: paletteHint }
 }
 
 function actionForExisting(
@@ -80,7 +89,15 @@ function actionForExisting(
 ): ImprovementAction {
   const fallback = CATEGORY_LABELS[item.category] ?? 'Wardrobe item'
   const title = item.name && item.name.trim().length > 0 ? item.name.trim() : fallback
-  return { type, item: title, source: 'wardrobe', reason, search_query }
+  return {
+    type,
+    item: title,
+    source: 'wardrobe',
+    reason,
+    search_query,
+    imageUrl: item.imageUrl,
+    colourGroup: item.colourGroup,
+  }
 }
 
 export function buildOutfitImprovements(

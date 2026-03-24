@@ -1,6 +1,8 @@
 import type { Outfit } from '@/types'
 import { CATEGORY_LABELS } from '@/lib/constants'
 import type { OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
+import { getEnhanceVisualsFromImprovements } from '@/lib/improvementVisuals'
+import { OutfitEnhanceDummy } from '@/components/OutfitEnhanceDummy'
 import '@/styles/theme.css'
 
 interface OutfitCardProps {
@@ -39,6 +41,8 @@ export function OutfitCard({
     outfit.footwear && { item: outfit.footwear, label: CATEGORY_LABELS[outfit.footwear.category] },
   ].filter(Boolean) as { item: { id: string; imageUrl: string; name: string }; label: string }[]
 
+  const enhanceVisuals = improvements ? getEnhanceVisualsFromImprovements(improvements) : null
+
   return (
     <div className="card card-accent-brown">
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: '0.5rem', marginBottom: '0.75rem' }}>
@@ -68,6 +72,14 @@ export function OutfitCard({
           <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 700, marginBottom: '0.35rem' }}>
             Improve this outfit
           </div>
+
+          {enhanceVisuals && (
+            <OutfitEnhanceDummy
+              outfit={outfit}
+              addImageUrls={enhanceVisuals.addImages}
+              swatchColors={enhanceVisuals.swatches}
+            />
+          )}
 
           <div style={{ fontSize: '0.85rem', color: 'var(--brown-mid)', marginBottom: '0.55rem' }}>
             {improvements.overall_explanation.trim()}
