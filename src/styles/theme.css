@@ -96,15 +96,15 @@ textarea {
   min-height: 100dvh;
   background-image: url(/wallpaper-pattern.png);
   background-repeat: repeat;
-  /* Pattern tiles scale with viewport so the fill stays even on small screens */
-  background-size: clamp(88px, 22vw, 200px);
+  background-size: auto;
   background-position: 0 0;
 }
 
 .page--home {
   background-image: url(/wallpaper-home.png);
   background-repeat: no-repeat;
-  background-size: cover;
+  /* Full image visible (no crop); may letterbox — see #root background */
+  background-size: contain;
   background-position: center center;
   background-attachment: scroll;
   min-height: 100vh;
@@ -119,7 +119,7 @@ textarea {
 .page--wardrobe {
   background-image: url(/wallpaper-wardrobe.png);
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: contain;
   background-position: center center;
   background-attachment: scroll;
   min-height: 100vh;
@@ -153,7 +153,7 @@ textarea {
 .page--favourites {
   background-image: url(/wallpaper-favourites.png);
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: contain;
   background-position: center center;
   background-attachment: scroll;
   min-height: 100vh;
@@ -201,7 +201,7 @@ textarea {
 .page--wishlist {
   background-image: url(/wallpaper-wishlist.png);
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: contain;
   background-position: center center;
   background-attachment: scroll;
   min-height: 100vh;
