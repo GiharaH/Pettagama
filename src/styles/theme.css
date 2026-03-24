@@ -93,20 +93,22 @@ textarea {
   margin: 0 auto;
   padding: 1.25rem 1.25rem 4.5rem;
   min-height: 100vh;
+  min-height: 100dvh;
   background-image: url(/wallpaper-pattern.png);
   background-repeat: repeat;
-  background-size: auto;
+  /* Pattern tiles scale with viewport so the fill stays even on small screens */
+  background-size: clamp(88px, 22vw, 200px);
   background-position: 0 0;
 }
 
 .page--home {
   background-image: url(/wallpaper-home.png);
   background-repeat: no-repeat;
-  /* Natural image size — no scaling up to fill the viewport */
-  background-size: auto;
-  background-position: left bottom;
+  background-size: cover;
+  background-position: center center;
   background-attachment: scroll;
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--black);
 }
 
@@ -118,9 +120,10 @@ textarea {
   background-image: url(/wallpaper-wardrobe.png);
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: center;
+  background-position: center center;
   background-attachment: scroll;
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--cream);
 }
 
@@ -151,9 +154,10 @@ textarea {
   background-image: url(/wallpaper-favourites.png);
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: center;
+  background-position: center center;
   background-attachment: scroll;
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--cream);
 }
 
@@ -198,9 +202,10 @@ textarea {
   background-image: url(/wallpaper-wishlist.png);
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: center;
+  background-position: center center;
   background-attachment: scroll;
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--black);
 }
 
