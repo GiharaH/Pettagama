@@ -116,6 +116,54 @@ textarea {
   color: var(--black);
 }
 
+/* Dark green texture when suggestions exist or while generating */
+.page--home.page--home-suggested {
+  background-image: url(/wallpaper-suggested-outfits.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  color: var(--cream);
+}
+
+.page--home.page--home-suggested .brand-header__wordmark,
+.page--home.page--home-suggested .page-title,
+.page--home.page--home-suggested .page-eyebrow,
+.page--home.page--home-suggested .brand-tagline {
+  color: var(--cream);
+}
+
+.page--home.page--home-suggested .divider {
+  background: rgba(245, 231, 222, 0.55);
+}
+
+.page--home.page--home-suggested .field-label {
+  color: var(--cream);
+}
+
+.page--home.page--home-suggested a {
+  color: var(--teal-mid);
+}
+
+.page--home.page--home-suggested a:hover {
+  color: var(--white);
+}
+
+.page--home.page--home-suggested .field-control {
+  background: rgba(255, 250, 246, 0.96);
+  color: var(--black);
+}
+
+.page--home.page--home-suggested .home-suggested-heading {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  color: var(--cream);
+  margin: 0;
+}
+
+.page--home.page--home-suggested .btn-ghost {
+  color: var(--cream);
+}
+
 .page--wardrobe {
   background-image: url(/wallpaper-wardrobe.png);
   background-repeat: no-repeat;

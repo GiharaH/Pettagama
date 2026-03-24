@@ -121,8 +121,10 @@ export function Home() {
 
   const displayName = userDetails.name?.trim() || null
 
+  const showSuggestedWallpaper = savedEntries.length > 0 || suggesting
+
   return (
-    <div className="page page--home">
+    <div className={`page page--home${showSuggestedWallpaper ? ' page--home-suggested' : ''}`}>
       <BrandHeader
         eyebrow={displayName ? `Welcome back, ${displayName}` : 'Home'}
         title="What's the occasion today?"
@@ -191,9 +193,7 @@ export function Home() {
       {savedEntries.length > 0 && (
         <section style={{ marginTop: '2rem' }} aria-label="Suggested outfits">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--brown-dark)', margin: 0 }}>
-              Suggested outfits
-            </h2>
+            <h2 className="home-suggested-heading">Suggested outfits</h2>
             <button type="button" className="btn btn-ghost" style={{ fontSize: '0.85rem' }} onClick={handleDeleteAllSuggested}>
               Delete all
             </button>
