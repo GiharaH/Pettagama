@@ -9,6 +9,20 @@ function HomeIcon() {
   )
 }
 
+function SuggestedIcon() {
+  return (
+    <svg className="nav-svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <path
+        d="M6 3h12v6l-6 4-6-4V3z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path d="M6 21h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 /* Person icon (head + shoulders) — used for Profile */
 function ProfilePersonIcon() {
   const id = useId().replace(/:/g, '')
@@ -60,6 +74,7 @@ function WishlistIcon() {
 
 const navItems = [
   { to: '/', label: 'Home', icon: <HomeIcon /> },
+  { to: '/suggested', label: 'Suggested', icon: <SuggestedIcon /> },
   { to: '/wardrobe', label: 'Wardrobe', icon: <WardrobeCircleIcon /> },
   { to: '/favourites', label: 'Favourites', icon: <FavouritesIcon /> },
   { to: '/wishlist', label: 'Wishlist', icon: <WishlistIcon /> },

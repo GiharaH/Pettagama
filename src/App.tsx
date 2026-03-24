@@ -6,6 +6,7 @@ import { Wardrobe } from '@/pages/Wardrobe'
 import { AddItem } from '@/pages/AddItem'
 import { EditItem } from '@/pages/EditItem'
 import { Favourites } from '@/pages/Favourites'
+import { SuggestedOutfits } from '@/pages/SuggestedOutfits'
 import { Wishlist } from '@/pages/Wishlist'
 import { Profile } from '@/pages/Profile'
 import { getProfile } from '@/lib/storage'
@@ -32,6 +33,7 @@ export default function App() {
           }
         >
           <Route index element={<Home />} />
+          <Route path="suggested" element={<SuggestedOutfits />} />
           <Route path="wardrobe" element={<Wardrobe />} />
           <Route path="wardrobe/add" element={<AddItem />} />
           <Route path="wardrobe/edit/:id" element={<EditItem />} />

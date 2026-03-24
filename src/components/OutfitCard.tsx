@@ -6,6 +6,9 @@ import '@/styles/theme.css'
 interface OutfitCardProps {
   outfit: Outfit
   onSave?: () => void
+  /** When true, the save action is shown as already completed. */
+  savedToFavourites?: boolean
+  saveButtonLabel?: string
   improvements?: OutfitImprovementSuggestion
 }
 
@@ -22,7 +25,13 @@ function ItemThumb({ item, label }: { item: { id: string; imageUrl: string; name
   )
 }
 
-export function OutfitCard({ outfit, onSave, improvements }: OutfitCardProps) {
+export function OutfitCard({
+  outfit,
+  onSave,
+  savedToFavourites,
+  saveButtonLabel = 'Save look to favourites',
+  improvements,
+}: OutfitCardProps) {
   const pieces = [
     outfit.top && { item: outfit.top, label: CATEGORY_LABELS[outfit.top.category] },
     outfit.bottom && { item: outfit.bottom, label: CATEGORY_LABELS[outfit.bottom.category] },
@@ -43,8 +52,14 @@ export function OutfitCard({ outfit, onSave, improvements }: OutfitCardProps) {
         </div>
       )}
       {onSave && (
-        <button type="button" className="btn btn-ghost" style={{ marginTop: '0.5rem' }} onClick={onSave}>
-          Save to favourites
+        <button
+          type="button"
+          className="btn btn-ghost"
+          style={{ marginTop: '0.5rem' }}
+          onClick={onSave}
+          disabled={savedToFavourites}
+        >
+          {savedToFavourites ? 'Saved to Favourites' : saveButtonLabel}
         </button>
       )}
 

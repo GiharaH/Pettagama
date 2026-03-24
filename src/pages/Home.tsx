@@ -8,7 +8,16 @@ import { OCCASIONS } from '@/lib/constants'
 import type { WeatherState, Outfit, Occasion } from '@/types'
 import { CATEGORY_TO_GROUP } from '@/types'
 import { OutfitCard } from '@/components/OutfitCard'
-import { saveFavourites, getFavourites } from '@/lib/storage'
+import {
+  getFavourites,
+  getRecentOutfitSignaturesSet,
+  getSuggestedOutfits,
+  recordOutfitsShown,
+  saveFavouriteBySignature,
+  saveSuggestedOutfits,
+  type SuggestedOutfitEntry,
+} from '@/lib/storage'
+import { outfitSignature } from '@/lib/outfitSignature'
 import { BrandHeader } from '@/components/BrandHeader'
 import { buildOutfitImprovements, type OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
 import '@/styles/theme.css'
@@ -21,7 +30,9 @@ export function Home() {
   const [occasion, setOccasion] = useState<Occasion>('casual')
   const [outfits, setOutfits] = useState<Outfit[]>([])
   const [suggesting, setSuggesting] = useState(false)
+  const [suggestError, setSuggestError] = useState<string | null>(null)
   const [improvementsByOutfitId, setImprovementsByOutfitId] = useState<Record<string, OutfitImprovementSuggestion>>({})
+  const [favSigs, setFavSigs] = useState(() => new Set(getFavourites().map((f) => outfitSignature(f.outfit))))
 
   const wardrobe = getWardrobe()
   const hasEnough =
@@ -61,26 +72,42 @@ export function Home() {
       tempBand: 'mild' as const,
       cachedAt: Date.now(),
     }
+    setSuggestError(null)
     setOutfits([])
     setImprovementsByOutfitId({})
     setSuggesting(true)
     setTimeout(() => {
-      const suggested = suggestOutfits(wardrobe, weatherToUse, occasion, 3)
-      setOutfits(suggested)
-      const map: Record<string, OutfitImprovementSuggestion> = {}
-      for (const o of suggested) {
-        map[o.id] = buildOutfitImprovements(wardrobe, o, weatherToUse, occasion)
+      const recent = getRecentOutfitSignaturesSet()
+      const prev = getSuggestedOutfits()
+      const onPage = new Set(prev.map((e) => outfitSignature(e.outfit)))
+      const exclude = new Set([...recent, ...onPage])
+      const suggested = suggestOutfits(wardrobe, weatherToUse, occasion, 3, { excludeSignatures: exclude })
+      if (suggested.length === 0) {
+        setSuggestError(
+          'No new outfits available right now. Remove some suggested outfits, wait up to a week for repeats, or add more wardrobe items.'
+        )
+        setSuggesting(false)
+        return
       }
+      const addedAt = new Date().toISOString()
+      const map: Record<string, OutfitImprovementSuggestion> = {}
+      const newEntries: SuggestedOutfitEntry[] = suggested.map((o) => {
+        const imp = buildOutfitImprovements(wardrobe, o, weatherToUse, occasion)
+        map[o.id] = imp
+        return { outfit: o, occasion, weather: weatherToUse, improvements: imp, addedAt }
+      })
+      saveSuggestedOutfits([...prev, ...newEntries])
+      recordOutfitsShown(suggested.map(outfitSignature))
+      setOutfits(suggested)
       setImprovementsByOutfitId(map)
       setSuggesting(false)
     }, 600)
   }
 
   const handleSaveFavourite = (outfit: Outfit) => {
-    const favs = getFavourites()
-    if (favs.some((f) => f.outfit.id === outfit.id)) return
-    favs.push({ outfit, savedAt: new Date().toISOString() })
-    saveFavourites(favs)
+    if (saveFavouriteBySignature(outfit)) {
+      setFavSigs((prev) => new Set([...prev, outfitSignature(outfit)]))
+    }
   }
 
   const displayName = userDetails.name?.trim() || null
@@ -140,6 +167,16 @@ export function Home() {
         {suggesting ? 'Suggesting…' : 'Suggest 3 outfits'}
       </button>
 
+      <p style={{ marginTop: '0.75rem', fontSize: '0.9rem' }}>
+        <Link to="/suggested">Suggested outfits</Link> (saved until you delete them)
+      </p>
+
+      {suggestError && (
+        <div className="card card-accent-mid" style={{ marginTop: '1rem', fontSize: '0.9rem' }} role="alert">
+          {suggestError}
+        </div>
+      )}
+
       {!hasEnough && (
         <p style={{ fontSize: '0.85rem', color: 'var(--black)', marginTop: '1rem' }}>
           Add at least one top and one bottom to your <Link to="/wardrobe">wardrobe</Link> to get suggestions.
@@ -159,6 +196,7 @@ export function Home() {
                   outfit={outfit}
                   improvements={improvementsByOutfitId[outfit.id]}
                   onSave={() => handleSaveFavourite(outfit)}
+                  savedToFavourites={favSigs.has(outfitSignature(outfit))}
                 />
               ))}
             </div>

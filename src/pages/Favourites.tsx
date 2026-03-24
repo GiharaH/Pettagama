@@ -13,7 +13,9 @@ export function Favourites() {
 
       {favourites.length === 0 ? (
         <div className="card card-accent-mid" style={{ textAlign: 'center', padding: '2rem' }}>
-          <p>No saved outfits yet. Suggest outfits on the Today screen and tap &quot;Save to favourites&quot; on any you like.</p>
+          <p>
+            No saved outfits yet. Tap &quot;Save look to favourites&quot; on any outfit on Home or the Suggested outfits page.
+          </p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
