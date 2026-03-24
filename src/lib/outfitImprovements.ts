@@ -50,11 +50,6 @@ function colourHint(g: WardrobeItem['colourGroup']): string {
   }
 }
 
-function pickFirst<T>(arr: T[], fallback: T | undefined = undefined): T | undefined {
-  if (!arr || arr.length === 0) return fallback
-  return arr[0]
-}
-
 function pickByColourGroups(
   items: WardrobeItem[],
   preferred: WardrobeItem['colourGroup'][],
