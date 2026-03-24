@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import type { Outfit } from '@/types'
 import { CATEGORY_LABELS } from '@/lib/constants'
-import type { OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
+import type { ImprovementAction, OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
 import { getEnhanceVisualsFromImprovements } from '@/lib/improvementVisuals'
 import { OutfitEnhanceDummy } from '@/components/OutfitEnhanceDummy'
+import { ImprovementActionCard, effectiveWishlistKey } from '@/components/ImprovementActionCard'
+import { addWishlistFromAction, getWishlist } from '@/lib/storage'
 import '@/styles/theme.css'
 
 interface OutfitCardProps {
@@ -43,6 +46,14 @@ export function OutfitCard({
 
   const enhanceVisuals = improvements ? getEnhanceVisualsFromImprovements(improvements) : null
 
+  const [wishlistIds, setWishlistIds] = useState(() => new Set(getWishlist().map((i) => i.id)))
+
+  const handleWishlist = (action: ImprovementAction) => {
+    if (addWishlistFromAction(action)) {
+      setWishlistIds(new Set(getWishlist().map((i) => i.id)))
+    }
+  }
+
   return (
     <div className="card card-accent-brown">
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: '0.5rem', marginBottom: '0.75rem' }}>
@@ -69,7 +80,7 @@ export function OutfitCard({
 
       {improvements && (
         <div style={{ marginTop: '0.75rem' }}>
-          <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 700, marginBottom: '0.35rem' }}>
+          <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 700, marginBottom: '0.5rem' }}>
             Improve this outfit
           </div>
 
@@ -81,36 +92,28 @@ export function OutfitCard({
             />
           )}
 
-          <div style={{ fontSize: '0.85rem', color: 'var(--brown-mid)', marginBottom: '0.55rem' }}>
-            {improvements.overall_explanation.trim()}
-          </div>
+          {improvements.overall_explanation.trim().length > 0 && (
+            <p className="improve-one-liner">{improvements.overall_explanation.trim()}</p>
+          )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div className="improve-directions">
             {improvements.directions.map((d) => (
-              <div key={d.title}>
-                <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 700 }}>
-                  {d.title}
-                </div>
-                <div style={{ color: 'var(--brown-mid)', fontSize: '0.85rem', fontStyle: 'italic', marginTop: '0.15rem' }}>
-                  {d.style_archetype}
-                </div>
-                <div style={{ marginTop: '0.35rem', color: 'var(--brown-mid)', fontSize: '0.85rem' }}>
-                  {d.actions.map((a, idx) => (
-                    <div key={`${d.title}-${idx}`} style={{ marginTop: idx === 0 ? 0 : '0.22rem' }}>
-                      <strong style={{ color: 'var(--brown-dark)' }}>{a.type === 'add' ? 'Add' : 'Swap'}</strong> {a.source === 'missing' ? '(missing)' : ''}: {a.item}
+              <div key={d.title} className="improve-direction-block">
+                <div className="improve-direction-title">{d.title}</div>
+                <div className="improve-actions-scroll" role="list">
+                  {d.actions.map((a) => (
+                    <div key={effectiveWishlistKey(a)} role="listitem">
+                      <ImprovementActionCard
+                        action={a}
+                        inWishlist={wishlistIds.has(effectiveWishlistKey(a))}
+                        onAddWishlist={() => handleWishlist(a)}
+                      />
                     </div>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-
-          {improvements.missing_items.length > 0 && (
-            <div style={{ marginTop: '0.55rem', fontSize: '0.85rem', color: 'var(--brown-mid)' }}>
-              <strong style={{ color: 'var(--brown-dark)' }}>Missing items:</strong>{' '}
-              {improvements.missing_items.map((m) => m.item).join(', ')}
-            </div>
-          )}
         </div>
       )}
     </div>

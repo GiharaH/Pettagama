@@ -12,9 +12,10 @@ export function getEnhanceVisualsFromImprovements(improvements: OutfitImprovemen
   for (const d of improvements.directions) {
     for (const a of d.actions) {
       if (a.type === 'add') {
-        if (a.imageUrl && !addImages.includes(a.imageUrl)) addImages.push(a.imageUrl)
-        if (firstColour === undefined && a.colourGroup) firstColour = a.colourGroup
+        const img = a.imageUrl || a.inspirationImageUrl
+        if (img && !addImages.includes(img)) addImages.push(img)
       }
+      if (firstColour === undefined && a.colourGroup) firstColour = a.colourGroup
     }
   }
   return {

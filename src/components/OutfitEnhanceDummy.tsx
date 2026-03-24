@@ -71,10 +71,6 @@ export function OutfitEnhanceDummy({ outfit, addImageUrls, swatchColors }: Outfi
 
   return (
     <div className="outfit-enhance-dummy">
-      <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 700, marginBottom: '0.65rem' }}>
-        Enhance your look
-      </div>
-
       <div className="outfit-enhance-dummy__row">
         <div className="outfit-dummy__column">
           <div className="outfit-dummy__label outfit-dummy__label--before">Before</div>
@@ -105,7 +101,7 @@ export function OutfitEnhanceDummy({ outfit, addImageUrls, swatchColors }: Outfi
               </div>
             </div>
           </div>
-          <p className="outfit-dummy__after-note">*+ suggestions applied*</p>
+          <p className="outfit-dummy__after-note">+ suggestions</p>
         </div>
       </div>
     </div>

@@ -8,7 +8,8 @@ import type {
   WeatherState,
   Outfit,
 } from '@/types'
-import type { OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
+import type { ImprovementAction, OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
+import { wishlistKeyForAction } from '@/lib/wishlistKeys'
 import { outfitSignature } from '@/lib/outfitSignature'
 
 const KEYS = {
@@ -183,4 +184,23 @@ export function getWishlist(): WishlistItem[] {
 
 export function saveWishlist(items: WishlistItem[]): void {
   localStorage.setItem(KEYS.WISHLIST, JSON.stringify(items))
+}
+
+export function addWishlistFromAction(action: ImprovementAction): boolean {
+  const id =
+    action.wishlistKey ?? wishlistKeyForAction(action.source, action.type, action.item, action.search_query)
+  const list = getWishlist()
+  if (list.some((i) => i.id === id)) return false
+  const imageUrl = action.imageUrl || action.inspirationImageUrl
+  saveWishlist([
+    ...list,
+    {
+      id,
+      title: action.item,
+      note: action.reason,
+      imageUrl,
+      addedAt: new Date().toISOString(),
+    },
+  ])
+  return true
 }

@@ -1,6 +1,8 @@
 import type { ColourGroup, Occasion, Outfit, WeatherState, WardrobeItem } from '@/types'
 import { CATEGORY_LABELS } from '@/lib/constants'
 import { CATEGORY_TO_GROUP } from '@/types'
+import { inspirationImageForSuggestion } from '@/lib/inspirationImages'
+import { wishlistKeyForAction } from '@/lib/wishlistKeys'
 
 export type ImprovementSource = 'wardrobe' | 'missing'
 export type ImprovementActionType = 'add' | 'swap'
@@ -15,6 +17,10 @@ export interface ImprovementAction {
   imageUrl?: string
   /** Colour palette for suggested “add” swatches. */
   colourGroup?: ColourGroup
+  /** Stable key for wishlist row (see `wishlistKeyForAction`). */
+  wishlistKey?: string
+  /** Stock-style inspiration photo for missing items (shopping vibe). */
+  inspirationImageUrl?: string
 }
 
 export interface ImprovementDirection {
@@ -78,7 +84,16 @@ function missingAction(
   search_query: string,
   paletteHint: ColourGroup = 'neutral'
 ): ImprovementAction {
-  return { type: 'add', item, source: 'missing', reason, search_query, colourGroup: paletteHint }
+  return {
+    type: 'add',
+    item,
+    source: 'missing',
+    reason,
+    search_query,
+    colourGroup: paletteHint,
+    wishlistKey: wishlistKeyForAction('missing', 'add', item, search_query),
+    inspirationImageUrl: inspirationImageForSuggestion(search_query, paletteHint),
+  }
 }
 
 function actionForExisting(
@@ -97,6 +112,7 @@ function actionForExisting(
     search_query,
     imageUrl: item.imageUrl,
     colourGroup: item.colourGroup,
+    wishlistKey: wishlistKeyForAction('wardrobe', type, title, search_query),
   }
 }
 
@@ -429,7 +445,7 @@ export function buildOutfitImprovements(
     return Array.from(map.values())
   })()
 
-  const overall_explanation = `For a ${occasion} outfit in ${weather.tempBand} weather, these upgrades keep the palette balanced (off-white/beige/olive + charcoal accents) and add practical layering when needed.`
+  const overall_explanation = `${occasion} · ${weather.tempBand} weather — balanced palette & layering ideas below.`
 
   return {
     overall_explanation,
