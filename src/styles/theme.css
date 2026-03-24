@@ -102,7 +102,8 @@ textarea {
 .page--home {
   background-image: url(/wallpaper-home.png);
   background-repeat: no-repeat;
-  background-size: 100% 100%;
+  /* Natural image size — no scaling up to fill the viewport */
+  background-size: auto;
   background-position: left bottom;
   background-attachment: scroll;
   min-height: 100vh;

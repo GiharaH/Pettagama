@@ -14,7 +14,7 @@ export function Favourites() {
       {favourites.length === 0 ? (
         <div className="card card-accent-mid" style={{ textAlign: 'center', padding: '2rem' }}>
           <p>
-            No saved outfits yet. Tap &quot;Save look to favourites&quot; on any outfit on Home or the Suggested outfits page.
+            No saved outfits yet. Tap &quot;Save look to favourites&quot; on any outfit on Home.
           </p>
         </div>
       ) : (

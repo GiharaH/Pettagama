@@ -9,6 +9,7 @@ import type { WeatherState, Outfit, Occasion } from '@/types'
 import { CATEGORY_TO_GROUP } from '@/types'
 import { OutfitCard } from '@/components/OutfitCard'
 import {
+  clearSuggestedOutfits,
   getFavourites,
   getRecentOutfitSignaturesSet,
   getSuggestedOutfits,
@@ -19,7 +20,7 @@ import {
 } from '@/lib/storage'
 import { outfitSignature } from '@/lib/outfitSignature'
 import { BrandHeader } from '@/components/BrandHeader'
-import { buildOutfitImprovements, type OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
+import { buildOutfitImprovements } from '@/lib/outfitImprovements'
 import '@/styles/theme.css'
 
 export function Home() {
@@ -28,10 +29,9 @@ export function Home() {
   const [weather, setWeather] = useState<WeatherState | null>(getCachedWeather())
   const [weatherLoading, setWeatherLoading] = useState(false)
   const [occasion, setOccasion] = useState<Occasion>('casual')
-  const [outfits, setOutfits] = useState<Outfit[]>([])
   const [suggesting, setSuggesting] = useState(false)
   const [suggestError, setSuggestError] = useState<string | null>(null)
-  const [improvementsByOutfitId, setImprovementsByOutfitId] = useState<Record<string, OutfitImprovementSuggestion>>({})
+  const [savedEntries, setSavedEntries] = useState<SuggestedOutfitEntry[]>(() => getSuggestedOutfits())
   const [favSigs, setFavSigs] = useState(() => new Set(getFavourites().map((f) => outfitSignature(f.outfit))))
 
   const wardrobe = getWardrobe()
@@ -64,6 +64,17 @@ export function Home() {
       .finally(() => setWeatherLoading(false))
   }, [profile?.locationGranted, profile?.lat, profile?.lon])
 
+  const handleDeleteAllSuggested = () => {
+    clearSuggestedOutfits()
+    setSavedEntries([])
+  }
+
+  const handleRemoveSuggested = (outfitId: string) => {
+    const next = getSuggestedOutfits().filter((e) => e.outfit.id !== outfitId)
+    saveSuggestedOutfits(next)
+    setSavedEntries(next)
+  }
+
   const handleSuggest = () => {
     const weatherToUse = weather ?? {
       temp: 22,
@@ -73,8 +84,6 @@ export function Home() {
       cachedAt: Date.now(),
     }
     setSuggestError(null)
-    setOutfits([])
-    setImprovementsByOutfitId({})
     setSuggesting(true)
     setTimeout(() => {
       const recent = getRecentOutfitSignaturesSet()
@@ -84,22 +93,22 @@ export function Home() {
       const suggested = suggestOutfits(wardrobe, weatherToUse, occasion, 3, { excludeSignatures: exclude })
       if (suggested.length === 0) {
         setSuggestError(
-          'No new outfits available right now. Remove some suggested outfits, wait up to a week for repeats, or add more wardrobe items.'
+          'No new outfits available right now. Remove some suggestions below, wait up to a week for repeats, or add more wardrobe items.'
         )
         setSuggesting(false)
         return
       }
       const addedAt = new Date().toISOString()
-      const map: Record<string, OutfitImprovementSuggestion> = {}
-      const newEntries: SuggestedOutfitEntry[] = suggested.map((o) => {
-        const imp = buildOutfitImprovements(wardrobe, o, weatherToUse, occasion)
-        map[o.id] = imp
-        return { outfit: o, occasion, weather: weatherToUse, improvements: imp, addedAt }
-      })
+      const newEntries: SuggestedOutfitEntry[] = suggested.map((o) => ({
+        outfit: o,
+        occasion,
+        weather: weatherToUse,
+        improvements: buildOutfitImprovements(wardrobe, o, weatherToUse, occasion),
+        addedAt,
+      }))
       saveSuggestedOutfits([...prev, ...newEntries])
       recordOutfitsShown(suggested.map(outfitSignature))
-      setOutfits(suggested)
-      setImprovementsByOutfitId(map)
+      setSavedEntries(getSuggestedOutfits())
       setSuggesting(false)
     }, 600)
   }
@@ -167,10 +176,6 @@ export function Home() {
         {suggesting ? 'Suggesting…' : 'Suggest 3 outfits'}
       </button>
 
-      <p style={{ marginTop: '0.75rem', fontSize: '0.9rem' }}>
-        <Link to="/suggested">Suggested outfits</Link> (saved until you delete them)
-      </p>
-
       {suggestError && (
         <div className="card card-accent-mid" style={{ marginTop: '1rem', fontSize: '0.9rem' }} role="alert">
           {suggestError}
@@ -183,25 +188,37 @@ export function Home() {
         </p>
       )}
 
-      {outfits.length > 0 && (
-        <>
-          <section style={{ marginTop: '2rem' }} aria-label="Suggested outfits">
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--brown-dark)', marginBottom: '1rem' }}>
-              Your outfits
+      {savedEntries.length > 0 && (
+        <section style={{ marginTop: '2rem' }} aria-label="Suggested outfits">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.1rem', color: 'var(--brown-dark)', margin: 0 }}>
+              Suggested outfits
             </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              {outfits.map((outfit) => (
+            <button type="button" className="btn btn-ghost" style={{ fontSize: '0.85rem' }} onClick={handleDeleteAllSuggested}>
+              Delete all
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {savedEntries.map((entry) => (
+              <div key={entry.outfit.id}>
                 <OutfitCard
-                  key={outfit.id}
-                  outfit={outfit}
-                  improvements={improvementsByOutfitId[outfit.id]}
-                  onSave={() => handleSaveFavourite(outfit)}
-                  savedToFavourites={favSigs.has(outfitSignature(outfit))}
+                  outfit={entry.outfit}
+                  improvements={entry.improvements}
+                  onSave={() => handleSaveFavourite(entry.outfit)}
+                  savedToFavourites={favSigs.has(outfitSignature(entry.outfit))}
                 />
-              ))}
-            </div>
-          </section>
-        </>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  style={{ marginTop: '0.5rem', width: '100%' }}
+                  onClick={() => handleRemoveSuggested(entry.outfit.id)}
+                >
+                  Remove this outfit
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       <p style={{ marginTop: '1.5rem', fontSize: '0.9rem' }}>
