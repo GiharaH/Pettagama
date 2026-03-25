@@ -1,0 +1,18 @@
+@tailwind components;
+@tailwind utilities;
+
+/* Scoped to #design-room-root (see tailwind.config.js important) — no global preflight */
+#design-room-root {
+  isolation: isolate;
+  min-height: 100vh;
+  --font-size: 14px;
+  font-size: var(--font-size);
+  font-family: Monaco, 'Lucida Console', monospace;
+  line-height: 1.5;
+}
+
+#design-room-root *,
+#design-room-root *::before,
+#design-room-root *::after {
+  box-sizing: border-box;
+}

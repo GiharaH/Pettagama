@@ -1,0 +1,6 @@
+{
+  "name": "outfit-designer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Design room UI embedded in Pettagama — run the parent app from the repo root (npm run dev)."
+}

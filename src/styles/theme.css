@@ -788,6 +788,41 @@ textarea {
   text-transform: uppercase;
 }
 
+/* Design room — circular key FAB (above bottom nav) */
+.design-room-fab {
+  position: fixed;
+  bottom: calc(64px + 12px + env(safe-area-inset-bottom, 0px));
+  right: 14px;
+  z-index: 101;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream);
+  border: 3px solid var(--brown-dark);
+  box-shadow: 0 4px 14px rgba(38, 7, 1, 0.18);
+  text-decoration: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.design-room-fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(38, 7, 1, 0.22);
+}
+
+.design-room-fab:active {
+  transform: scale(0.98);
+}
+
+.design-room-fab img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
 /* Before / after dummy */
 .outfit-enhance-dummy {
   margin-top: 0.35rem;
