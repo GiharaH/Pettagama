@@ -8,6 +8,10 @@
   --black: #260701;
   --brown-deeper: #1a0500;
   --white: #fffaf6;
+  --surface-editorial: #f0eeeb;
+  --nav-border: #e0ddd9;
+  --nav-active: #54311a;
+  --nav-muted: rgba(84, 49, 26, 0.45);
 
   --font-serif: 'IM Fell English', Georgia, serif;
   --font-serif-sc: 'IM Fell English SC', Georgia, serif;
@@ -47,7 +51,7 @@ body {
 #root {
   background:
     radial-gradient(ellipse at 15% 0%, rgba(132, 79, 57, 0.12) 0%, transparent 55%),
-    radial-gradient(ellipse at 90% 10%, rgba(3, 94, 123, 0.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 10%, rgba(3, 94, 123, 0.1) 0%, transparent 50%),
     var(--cream);
   min-height: 100vh;
 }
@@ -165,9 +169,10 @@ textarea {
 }
 
 .page--wardrobe {
+  background-color: #1f0a0a;
   background-image: url(/wallpaper-wardrobe.png);
   background-repeat: no-repeat;
-  background-size: contain;
+  background-size: cover;
   background-position: center center;
   background-attachment: scroll;
   min-height: 100vh;
@@ -183,19 +188,246 @@ textarea {
 }
 
 .page--wardrobe a {
-  color: var(--cream);
+  color: var(--teal-mid);
 }
 
 .page--wardrobe a:hover {
   color: var(--white);
 }
 
-.page--wardrobe section h2 {
-  color: var(--cream) !important;
+.page--wardrobe .divider {
+  background: rgba(245, 231, 222, 0.55);
 }
 
-.page--wardrobe .divider {
-  background: rgba(245, 231, 222, 0.6);
+.page--wardrobe .field-label {
+  color: var(--cream);
+}
+
+.page--wardrobe .btn-ghost {
+  color: var(--cream);
+  border-color: rgba(245, 231, 222, 0.35);
+}
+
+.page--wardrobe .btn-ghost:hover {
+  background: rgba(245, 231, 222, 0.08);
+  color: var(--white);
+}
+
+/* Add-item preview: catalog image already includes baby-blue fill */
+.wardrobe-catalog-preview-wrap {
+  margin: 0 auto 1.25rem;
+  max-width: 280px;
+  width: 100%;
+  background: #b8e0f2;
+  border-radius: 8px;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.wardrobe-catalog-preview-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  vertical-align: top;
+}
+
+/* Wardrobe list — editorial flat-lay (capsule mood board) */
+.page--wardrobe-flatlay {
+  max-width: 100%;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  padding-bottom: 5rem;
+}
+
+.wardrobe-page-divider {
+  width: 48px;
+  height: 1px;
+  background: rgba(245, 231, 222, 0.45);
+  margin: 1rem 0 1.5rem;
+}
+
+.wardrobe-add-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.wardrobe-add-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--black);
+  background: #b8e0f2;
+  margin-bottom: 0;
+  padding: 0.65rem 1.85rem;
+  border-radius: 999px;
+  text-decoration: none;
+  border: none;
+  box-shadow: none;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.wardrobe-add-link:hover {
+  color: var(--black);
+  background: #9fd0e8;
+  text-decoration: none;
+}
+
+.page--wardrobe .wardrobe-add-link {
+  color: var(--black);
+}
+
+.page--wardrobe .wardrobe-add-link:hover {
+  color: var(--black);
+}
+
+.wardrobe-flatlay {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.wardrobe-category-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem 1.25rem;
+  margin-bottom: clamp(3rem, 8vw, 4rem);
+}
+
+.wardrobe-category-meta {
+  flex: 0 0 5.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding-bottom: 0.15rem;
+}
+
+.wardrobe-category-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+}
+
+.wardrobe-category-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.35rem;
+  font-size: 0.6rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  line-height: 1;
+}
+
+.wardrobe-category-strip {
+  flex: 1 1 12rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  align-items: flex-end;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(245, 231, 222, 0.35) transparent;
+}
+
+.wardrobe-flatlay-item {
+  flex: 0 0 auto;
+  width: 92px;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.wardrobe-flatlay-item img {
+  width: 100%;
+  height: auto;
+  max-height: 132px;
+  display: block;
+  object-fit: contain;
+  object-position: center bottom;
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.wardrobe-flatlay-item:hover img {
+  opacity: 0.88;
+}
+
+.wardrobe-empty {
+  text-align: center;
+  padding: 2.5rem 0.5rem 3rem;
+}
+
+.wardrobe-empty__text {
+  color: var(--cream);
+  opacity: 0.88;
+  margin-bottom: 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.wardrobe-add-link--primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.85rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  background: #b8e0f2;
+  color: var(--black);
+  text-decoration: none;
+}
+
+.wardrobe-add-link--primary:hover {
+  background: #9fd0e8;
+  color: var(--black);
+  text-decoration: none;
+}
+
+.page--wardrobe .wardrobe-add-link--primary:hover {
+  color: var(--black);
+}
+
+@media (max-width: 380px) {
+  .wardrobe-category-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wardrobe-category-meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .wardrobe-category-strip {
+    flex: 1 1 auto;
+  }
 }
 
 .page--favourites {
@@ -504,12 +736,13 @@ textarea {
   left: 0;
   right: 0;
   height: 64px;
-  background: var(--brown-dark);
+  background: var(--surface-editorial);
+  border-top: 1px solid var(--nav-border);
   display: flex;
   align-items: center;
   justify-content: space-around;
   padding: 0 0.5rem;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
   z-index: 100;
 }
 
@@ -520,7 +753,7 @@ textarea {
   justify-content: center;
   gap: 0.2rem;
   padding: 0.5rem 0.75rem;
-  color: rgba(245, 231, 222, 0.65);
+  color: var(--nav-muted);
   text-decoration: none;
   font-size: 0.7rem;
   letter-spacing: 0.05em;
@@ -529,12 +762,12 @@ textarea {
 }
 
 .nav-link:hover {
-  color: var(--cream);
+  color: var(--brown-dark);
 }
 
 .nav-link.active {
-  color: var(--cream);
-  font-weight: 400;
+  color: var(--nav-active);
+  font-weight: 500;
 }
 
 .nav-icon {

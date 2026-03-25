@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { getWardrobe } from '@/lib/storage'
-import { CATEGORY_LABELS } from '@/lib/constants'
 import { CATEGORY_TO_GROUP } from '@/types'
 import type { WardrobeItem } from '@/types'
 import { BrandHeader } from '@/components/BrandHeader'
@@ -14,6 +13,14 @@ const GROUP_ORDER: Array<'tops' | 'bottoms' | 'outerwear' | 'footwear' | 'access
   'accessories',
 ]
 
+const GROUP_LABELS: Record<(typeof GROUP_ORDER)[number], string> = {
+  tops: 'Tops',
+  bottoms: 'Bottoms',
+  outerwear: 'Outerwear',
+  footwear: 'Footwear',
+  accessories: 'Accessories',
+}
+
 export function Wardrobe() {
   const items = getWardrobe()
 
@@ -23,32 +30,37 @@ export function Wardrobe() {
   }))
 
   return (
-    <div className="page page--wardrobe">
+    <div className="page page--wardrobe page--wardrobe-flatlay">
       <BrandHeader eyebrow="Your closet" title="Wardrobe" tagline="Let your wardrobe think for you." />
-      <div className="divider" style={{ marginLeft: 'auto', marginRight: 'auto' }} />
+      <div className="wardrobe-page-divider" aria-hidden />
 
-      <Link to="/wardrobe/add" className="btn btn-primary btn-block" style={{ marginBottom: '1.5rem' }}>
-        + Add item
-      </Link>
+      <div className="wardrobe-add-wrap">
+        <Link to="/wardrobe/add" className="wardrobe-add-link">
+          + Add item
+        </Link>
+      </div>
 
       {items.length === 0 ? (
-        <div className="card card-accent-teal-mid" style={{ textAlign: 'center', padding: '2rem' }}>
-          <p style={{ marginBottom: '1rem', color: 'var(--black)' }}>No items yet. Add your first piece to start getting outfit suggestions.</p>
-          <Link to="/wardrobe/add" className="btn btn-secondary">
+        <div className="wardrobe-empty">
+          <p className="wardrobe-empty__text">No items yet. Add your first piece to start getting outfit suggestions.</p>
+          <Link to="/wardrobe/add" className="wardrobe-add-link wardrobe-add-link--primary">
             Add your first item
           </Link>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="wardrobe-flatlay">
           {byGroup.map(({ group, items: groupItems }) =>
             groupItems.length > 0 ? (
-              <section key={group} aria-label={group}>
-                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1rem', color: 'var(--teal-dark)', marginBottom: '0.75rem', textTransform: 'capitalize' }}>
-                  {group}
-                </h2>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '0.75rem' }}>
+              <section key={group} className="wardrobe-category-row" aria-label={GROUP_LABELS[group]}>
+                <div className="wardrobe-category-meta">
+                  <span className="wardrobe-category-label">{GROUP_LABELS[group]}</span>
+                  <span className="wardrobe-category-count" aria-label={`${groupItems.length} items`}>
+                    {groupItems.length}
+                  </span>
+                </div>
+                <div className="wardrobe-category-strip">
                   {groupItems.map((item) => (
-                    <ItemCard key={item.id} item={item} />
+                    <FlatlayItem key={item.id} item={item} />
                   ))}
                 </div>
               </section>
@@ -60,22 +72,10 @@ export function Wardrobe() {
   )
 }
 
-function ItemCard({ item }: { item: WardrobeItem }) {
+function FlatlayItem({ item }: { item: WardrobeItem }) {
   return (
-    <Link
-      to={`/wardrobe/edit/${item.id}`}
-      className="card"
-      style={{ padding: 0, overflow: 'hidden', textDecoration: 'none', color: 'inherit' }}
-    >
-      <div className="clothing-img-wrap" style={{ aspectRatio: '1' }}>
-        <img src={item.imageUrl} alt={item.name} />
-      </div>
-      <div style={{ padding: '0.5rem' }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: 400, color: 'var(--brown-dark)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {item.name || CATEGORY_LABELS[item.category]}
-        </div>
-        <div style={{ fontSize: '0.7rem', color: 'var(--brown-mid)' }}>{CATEGORY_LABELS[item.category]}</div>
-      </div>
+    <Link to={`/wardrobe/edit/${item.id}`} className="wardrobe-flatlay-item">
+      <img src={item.imageUrl} alt="" />
     </Link>
   )
 }

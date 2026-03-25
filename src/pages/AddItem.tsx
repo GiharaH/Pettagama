@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getWardrobe, saveWardrobe } from '@/lib/storage'
 import { suggestCategoryForImage } from '@/lib/ai'
+import { processWardrobeUpload } from '@/lib/wardrobeCatalogImage'
 import { CATEGORY_LABELS, ALL_CATEGORIES, COLOUR_GROUPS, SEASONS } from '@/lib/constants'
 import type { WardrobeItem, WardrobeCategory, ColourGroup, SeasonSuitability } from '@/types'
 import { BrandHeader } from '@/components/BrandHeader'
@@ -22,16 +23,27 @@ export function AddItem() {
   const [season, setSeason] = useState<SeasonSuitability>('all_season')
   const [saving, setSaving] = useState(false)
   const [suggestingCategory, setSuggestingCategory] = useState(false)
+  const [processingPhoto, setProcessingPhoto] = useState(false)
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = () => {
-      setPreviewUrl(reader.result as string)
+    setProcessingPhoto(true)
+    try {
+      const dataUrl = await processWardrobeUpload(file)
+      setPreviewUrl(dataUrl)
       setStep('details')
+    } catch {
+      const reader = new FileReader()
+      reader.onload = () => {
+        setPreviewUrl(reader.result as string)
+        setStep('details')
+      }
+      reader.readAsDataURL(file)
+    } finally {
+      setProcessingPhoto(false)
+      e.target.value = ''
     }
-    reader.readAsDataURL(file)
   }
 
   useEffect(() => {
@@ -94,10 +106,11 @@ export function AddItem() {
       {step === 'upload' && (
         <>
           <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-            Photograph or upload a clear image of the item. We&apos;ll use it in your catalogue and outfit suggestions.
+            Photograph or upload a clear shot of the item. We remove the background, place it on a consistent baby-blue
+            catalog surface, and—when an API key is configured—use AI to polish the look for your wardrobe.
           </p>
           <p style={{ marginBottom: '1rem', fontSize: '0.85rem', color: 'var(--brown-mid)', fontStyle: 'italic' }}>
-            For best results, use a photo on a <strong>white background</strong> with the item <strong>hanging on a hanger</strong>.
+            Plain backgrounds and good lighting help; processing may take a few seconds on first use while models load.
           </p>
           <input
             ref={fileInput}
@@ -107,21 +120,23 @@ export function AddItem() {
             onChange={handleFile}
             className="sr-only"
             aria-label="Choose photo"
+            disabled={processingPhoto}
           />
           <button
             type="button"
             className="btn btn-primary btn-block"
             onClick={() => fileInput.current?.click()}
+            disabled={processingPhoto}
           >
-            Choose photo
+            {processingPhoto ? 'Preparing catalog photo…' : 'Choose photo'}
           </button>
         </>
       )}
 
       {step === 'details' && previewUrl && (
         <>
-          <div className="clothing-img-wrap" style={{ marginBottom: '1.25rem', marginLeft: 'auto', marginRight: 'auto', maxWidth: 280, aspectRatio: '3/4' }}>
-            <img src={previewUrl} alt="Preview" />
+          <div className="wardrobe-catalog-preview-wrap">
+            <img src={previewUrl} alt="Preview" className="wardrobe-catalog-preview-img" />
           </div>
 
           <label className="field-label">Name (optional)</label>
