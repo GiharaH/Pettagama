@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import type { Outfit } from '@/types'
+import type { Outfit, WardrobeItem } from '@/types'
 import { CATEGORY_LABELS } from '@/lib/constants'
 import type { ImprovementAction, OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
 import { getEnhanceVisualsFromImprovements } from '@/lib/improvementVisuals'
 import { OutfitEnhanceDummy } from '@/components/OutfitEnhanceDummy'
 import { ImprovementActionCard, effectiveWishlistKey } from '@/components/ImprovementActionCard'
+import { GarmentCutoutImage } from '@/components/GarmentCutoutImage'
 import { addWishlistFromAction, getWishlist } from '@/lib/storage'
 import '@/styles/theme.css'
 
@@ -17,17 +18,32 @@ interface OutfitCardProps {
   improvements?: OutfitImprovementSuggestion
 }
 
-function ItemThumb({ item, label }: { item: { id: string; imageUrl: string; name: string }; label: string }) {
-  return (
-    <div style={{ flex: '1 1 0', minWidth: 0 }}>
-      <div className="clothing-img-wrap" style={{ aspectRatio: '1', borderRadius: 4 }}>
-        <img src={item.imageUrl} alt="" />
-      </div>
-      <div style={{ fontSize: '0.7rem', color: 'var(--brown-mid)', marginTop: '0.25rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {label}
-      </div>
-    </div>
-  )
+function splitAccessoriesForPreview(outfit: Outfit): { bag?: WardrobeItem; jewellery?: WardrobeItem } {
+  let bag: WardrobeItem | undefined
+  let jewellery: WardrobeItem | undefined
+  const jewCats = new Set(['necklace', 'earrings_rings', 'bangles_bracelets', 'belt_scarf'])
+
+  for (const a of outfit.accessories) {
+    if (a.category === 'bag_clutch' && !bag) {
+      bag = a
+      continue
+    }
+    if (jewCats.has(a.category) && !jewellery) {
+      jewellery = a
+    }
+  }
+
+  // If we have no jewellery yet, fall back to a second accessory (still keeps preview simple).
+  if (!jewellery) {
+    for (const a of outfit.accessories) {
+      if (a !== bag && !jewellery) {
+        jewellery = a
+        break
+      }
+    }
+  }
+
+  return { bag, jewellery }
 }
 
 export function OutfitCard({
@@ -37,12 +53,17 @@ export function OutfitCard({
   saveButtonLabel = 'Save look to Capsule',
   improvements,
 }: OutfitCardProps) {
-  const pieces = [
-    outfit.top && { item: outfit.top, label: CATEGORY_LABELS[outfit.top.category] },
-    outfit.bottom && { item: outfit.bottom, label: CATEGORY_LABELS[outfit.bottom.category] },
-    outfit.outerwear && { item: outfit.outerwear, label: CATEGORY_LABELS[outfit.outerwear.category] },
-    outfit.footwear && { item: outfit.footwear, label: CATEGORY_LABELS[outfit.footwear.category] },
-  ].filter(Boolean) as { item: { id: string; imageUrl: string; name: string }; label: string }[]
+  const { bag, jewellery } = splitAccessoriesForPreview(outfit)
+
+  const topLabel = outfit.top ? CATEGORY_LABELS[outfit.top.category] : null
+  const layerLabel = outfit.outerwear ? CATEGORY_LABELS[outfit.outerwear.category] : null
+  const bottomLabel = outfit.bottom ? CATEGORY_LABELS[outfit.bottom.category] : null
+  const shoeLabel = outfit.footwear ? CATEGORY_LABELS[outfit.footwear.category] : null
+  const bagLabel = bag ? CATEGORY_LABELS[bag.category] : null
+  const jewelleryLabel = jewellery ? CATEGORY_LABELS[jewellery.category] : null
+
+  const pillLabels = [topLabel, layerLabel, bottomLabel, shoeLabel, bagLabel, jewelleryLabel].filter(Boolean) as string[]
+  const hasLayerRow = Boolean(outfit.outerwear || bag || jewellery)
 
   const enhanceVisuals = improvements ? getEnhanceVisualsFromImprovements(improvements) : null
 
@@ -56,9 +77,64 @@ export function OutfitCard({
 
   return (
     <div className="card card-accent-brown">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: '0.5rem', marginBottom: '0.75rem' }}>
-        {pieces.map((p) => (
-          <ItemThumb key={p.item.id} item={p.item} label={p.label} />
+      <div className="suggested-outfit-stack" aria-label="Suggested outfit preview">
+        {/* Vertical main stack */}
+        {outfit.top && (
+          <div className="suggested-outfit-oval suggested-outfit-oval--main">
+            <GarmentCutoutImage src={outfit.top.imageUrl} alt={outfit.top.name} className="suggested-outfit-oval__img" />
+          </div>
+        )}
+
+        {/* Accessories/jewellery can sit horizontally alongside the layer */}
+        {outfit.top && hasLayerRow && <div className="suggested-outfit-connector-v" aria-hidden />}
+        {hasLayerRow && (
+          <div className="suggested-outfit-horizontal-row" aria-hidden>
+            {outfit.outerwear && (
+              <div className="suggested-outfit-oval suggested-outfit-oval--main">
+                <GarmentCutoutImage
+                  src={outfit.outerwear.imageUrl}
+                  alt={outfit.outerwear.name}
+                  className="suggested-outfit-oval__img"
+                />
+              </div>
+            )}
+            {bag && (
+              <div className="suggested-outfit-oval suggested-outfit-oval--secondary">
+                <GarmentCutoutImage src={bag.imageUrl} alt={bag.name} className="suggested-outfit-oval__img" />
+              </div>
+            )}
+            {jewellery && (
+              <div className="suggested-outfit-oval suggested-outfit-oval--secondary">
+                <GarmentCutoutImage src={jewellery.imageUrl} alt={jewellery.name} className="suggested-outfit-oval__img" />
+              </div>
+            )}
+          </div>
+        )}
+
+        {outfit.top && outfit.bottom && !hasLayerRow && <div className="suggested-outfit-connector-v" aria-hidden />}
+        {hasLayerRow && outfit.bottom && <div className="suggested-outfit-connector-v" aria-hidden />}
+        {outfit.bottom && (
+          <div className="suggested-outfit-oval suggested-outfit-oval--main">
+            <GarmentCutoutImage src={outfit.bottom.imageUrl} alt={outfit.bottom.name} className="suggested-outfit-oval__img" />
+          </div>
+        )}
+
+        {outfit.bottom && outfit.footwear && <div className="suggested-outfit-connector-v" aria-hidden />}
+        {outfit.footwear && (
+          <div className="suggested-outfit-oval suggested-outfit-oval--secondary">
+            <GarmentCutoutImage
+              src={outfit.footwear.imageUrl}
+              alt={outfit.footwear.name}
+              className="suggested-outfit-oval__img"
+            />
+          </div>
+        )}
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.75rem', justifyContent: 'center' }}>
+        {pillLabels.map((label) => (
+          <span key={label} className="tag" style={{ margin: 0 }}>
+            {label}
+          </span>
         ))}
       </div>
       {outfit.accessories.length > 0 && (

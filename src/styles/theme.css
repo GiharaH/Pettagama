@@ -40,6 +40,7 @@
   --nav-clearance: calc(var(--nav-bar-h) + var(--safe-bottom) + 10px);
   --page-max: 480px;
   --capsule-card-w: min(260px, calc(100vw - 2.5rem));
+  --suggested-burgundy: #5a1224;
 }
 
 *,
@@ -201,6 +202,164 @@ textarea {
   font-size: 1.1rem;
   color: var(--cream);
   margin: 0;
+}
+
+/* Home suggested outfit card: larger centered stacked layout */
+.suggested-outfit-stack {
+  position: relative;
+  height: auto;
+  min-height: min(620px, 78vh);
+  width: 100%;
+  margin-bottom: 0.8rem;
+  border-radius: 16px;
+  border: 1px solid rgba(245, 231, 222, 0.35);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  padding: 18px 14px;
+  /* Use Home background with a translucent overlay so it "shows through" in the preview area */
+  background-image:
+    linear-gradient(rgba(61, 15, 20, 0.18), rgba(61, 15, 20, 0.18)),
+    url(/wallpaper-home.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.suggested-outfit-connector-v {
+  width: 2px;
+  height: 20px;
+  background: rgba(135, 206, 235, 0.95);
+  border-radius: 4px;
+  margin: 6px 0;
+}
+
+.suggested-outfit-horizontal-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.suggested-outfit-oval {
+  position: relative;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(255, 250, 246, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.suggested-outfit-oval::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: #f0ede6;
+  background-image: url(/suggested-outfit-oval-dots.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: 0;
+}
+
+.suggested-outfit-oval--main {
+  width: clamp(130px, 46vw, 190px);
+  height: clamp(130px, 22vh, 175px);
+}
+
+.suggested-outfit-oval--secondary {
+  width: clamp(130px, 46vw, 190px);
+  height: clamp(130px, 22vh, 175px);
+}
+
+.suggested-outfit-oval__img {
+  position: relative;
+  z-index: 1;
+  width: 98%;
+  height: 98%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  mix-blend-mode: normal;
+  filter:
+    contrast(1.25)
+    saturate(1.18)
+    brightness(1.06);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+}
+
+.suggested-outfit-stack__piece {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 250, 246, 0.3);
+  border: 1px solid rgba(255, 250, 246, 0.45);
+  backdrop-filter: blur(1px);
+  padding: 0.35rem 0.45rem;
+}
+
+.suggested-outfit-stack__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.32));
+}
+
+.suggested-outfit-stack__piece--outerwear {
+  top: 6%;
+  width: 62%;
+  height: 24%;
+  z-index: 4;
+}
+
+.suggested-outfit-stack__piece--top {
+  top: 18%;
+  width: 66%;
+  height: 30%;
+  z-index: 5;
+}
+
+.suggested-outfit-stack__piece--bottom {
+  top: 46%;
+  width: 64%;
+  height: 33%;
+  z-index: 3;
+}
+
+.suggested-outfit-stack__piece--footwear {
+  bottom: 6%;
+  width: 58%;
+  height: 16%;
+  z-index: 6;
+}
+
+.suggested-outfit-stack__piece--acc-left {
+  left: 24%;
+  top: 53%;
+  width: 28%;
+  height: 15%;
+  z-index: 7;
+}
+
+.suggested-outfit-stack__piece--acc-right {
+  left: 76%;
+  top: 53%;
+  width: 28%;
+  height: 15%;
+  z-index: 7;
 }
 
 .page--wardrobe {

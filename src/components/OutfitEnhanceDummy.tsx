@@ -56,15 +56,7 @@ export function OutfitEnhanceDummy({ outfit, addImageUrls, swatchColors }: Outfi
   return (
     <div className="outfit-enhance-dummy">
       <div className="outfit-enhance-dummy__row">
-        <div className="outfit-flatlay__column">
-          <div className="outfit-flatlay__label outfit-flatlay__label--before">Before</div>
-          <div className="outfit-flatlay__board">
-            <FloatingCluster outfit={outfit} />
-          </div>
-        </div>
-
-        <div className="outfit-flatlay__column outfit-flatlay__column--after">
-          <div className="outfit-flatlay__label outfit-flatlay__label--after">After</div>
+        <div className="outfit-flatlay__column" style={{ flex: '1 1 auto' }}>
           <div className="outfit-flatlay__board outfit-flatlay__board--after">
             <FloatingCluster outfit={outfit} />
             {extras.length > 0 && (
@@ -85,7 +77,6 @@ export function OutfitEnhanceDummy({ outfit, addImageUrls, swatchColors }: Outfi
               ))}
             </div>
           </div>
-          <p className="outfit-flatlay__after-note">+ suggestions</p>
         </div>
       </div>
     </div>
