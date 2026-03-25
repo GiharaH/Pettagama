@@ -1,4 +1,5 @@
 import { Shirt, Layers, Footprints, PackageOpen, Watch } from 'lucide-react'
+import { DesignRoomCutoutImage } from './DesignRoomCutoutImage'
 
 export interface ClothingItem {
   id: string
@@ -74,8 +75,12 @@ export function WardrobeSelector({
                   boxShadow: isSelected ? '3px 3px 0px black' : '2px 2px 0px black',
                 }}
               >
-                <div className="aspect-square relative">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                <div className="aspect-square relative design-room-garment-surface flex items-center justify-center">
+                  <DesignRoomCutoutImage
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-contain pointer-events-none"
+                  />
                 </div>
                 <div
                   className={`p-1 text-xs border-t border-black ${

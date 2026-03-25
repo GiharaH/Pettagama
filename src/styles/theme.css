@@ -30,6 +30,16 @@
   --shadow-card-hover: 0 6px 24px rgba(84, 49, 26, 0.12);
   --transition-fast: 0.2s ease;
   --transition-normal: 0.35s ease;
+
+  /* Layout — safe areas + nav clearance (notched phones, home indicator) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --nav-bar-h: 64px;
+  --nav-clearance: calc(var(--nav-bar-h) + var(--safe-bottom) + 10px);
+  --page-max: 480px;
+  --capsule-card-w: min(260px, calc(100vw - 2.5rem));
 }
 
 *,
@@ -41,8 +51,10 @@
 }
 
 html {
-  font-size: 17px;
+  font-size: clamp(15px, 2.5vw + 11px, 18px);
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -52,7 +64,10 @@ body {
   font-weight: 300;
   line-height: 1.65;
   min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
   font-size: 1.05rem;
+  overflow-x: clip;
 }
 
 #root {
@@ -61,6 +76,9 @@ body {
     radial-gradient(ellipse at 90% 10%, rgba(3, 94, 123, 0.1) 0%, transparent 50%),
     var(--cream);
   min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  overflow-x: clip;
 }
 
 a {
@@ -100,11 +118,16 @@ textarea {
 }
 
 .page {
-  max-width: 480px;
+  max-width: min(var(--page-max), 100%);
+  width: 100%;
   margin: 0 auto;
-  padding: 1.25rem 1.25rem 4.5rem;
+  padding-top: max(1.25rem, var(--safe-top));
+  padding-left: max(1rem, var(--safe-left));
+  padding-right: max(1rem, var(--safe-right));
+  padding-bottom: max(4.5rem, var(--nav-clearance));
   min-height: 100vh;
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
   background-image: url(/wallpaper-pattern.png);
   background-repeat: repeat;
   background-size: auto;
@@ -719,32 +742,281 @@ textarea {
   border: 1px solid rgba(255, 250, 246, 0.4);
 }
 
-.capsule-detail-row__meta {
+/* Capsule detail — horizontal flat-lay outfit cards */
+.capsule-flatlay-section {
+  margin-bottom: 1.5rem;
+}
+
+.capsule-flatlay-row-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #844f39;
+  margin: 0 0 0.65rem;
+}
+
+.capsule-flatlay-row {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  padding-right: max(0px, var(--safe-right));
+  scroll-padding-inline: 0 max(1rem, var(--safe-right));
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+.capsule-flatlay-slide {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  margin-top: 0.35rem;
-  font-size: 0.78rem;
-  color: rgba(255, 250, 246, 0.88);
+  align-items: center;
+  gap: 0.5rem;
+  max-width: var(--capsule-card-w);
 }
 
-.capsule-detail-row__score {
-  font-weight: 600;
+.capsule-flatlay-slide__actions {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 0.68rem;
+  color: rgba(245, 231, 222, 0.75);
+  text-align: center;
+  line-height: 1.45;
+  width: 100%;
 }
 
-.capsule-detail-row__actions {
+.capsule-flatlay-slide__action {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: inherit;
+  color: rgba(245, 231, 222, 0.85);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.capsule-flatlay-slide__action:hover {
+  color: var(--cream);
+}
+
+.capsule-flatlay-slide__action-sep {
+  margin: 0 0.15rem;
+  opacity: 0.5;
+}
+
+.capsule-flatlay-slide__saved {
+  display: block;
+  margin-top: 0.25rem;
+  opacity: 0.85;
+}
+
+.capsule-flatlay-card {
+  width: var(--capsule-card-w);
+  flex: 0 0 var(--capsule-card-w);
+  border-radius: 14px;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  max-width: 100%;
+}
+
+.capsule-flatlay-card__canvas {
+  position: relative;
+  height: min(300px, 52vh);
+  width: 100%;
+  overflow: hidden;
+}
+
+.capsule-flatlay-card__piece {
+  position: absolute;
+  object-fit: contain;
+  filter: drop-shadow(0px 6px 16px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+}
+
+/* Flat-lay positions (styled shoot overlap) */
+.capsule-flatlay-card__piece--bottom {
+  left: 18%;
+  top: 28%;
+  width: 64%;
+  max-height: 58%;
+  height: auto;
+  z-index: 1;
+}
+
+.capsule-flatlay-card__piece--outer {
+  left: 12%;
+  top: 4%;
+  width: 58%;
+  max-height: 52%;
+  height: auto;
+  z-index: 2;
+}
+
+.capsule-flatlay-card__piece--top {
+  left: 4%;
+  top: 6%;
+  width: 56%;
+  max-height: 50%;
+  height: auto;
+  z-index: 4;
+}
+
+.capsule-flatlay-card__piece--shoe {
+  left: 2%;
+  bottom: 5%;
+  width: 44%;
+  max-height: 30%;
+  height: auto;
+  z-index: 5;
+}
+
+.capsule-flatlay-card__piece--bag {
+  right: 2%;
+  top: 34%;
+  width: 36%;
+  max-height: 42%;
+  height: auto;
+  left: auto;
+  z-index: 4;
+}
+
+.capsule-flatlay-card__piece--jewel {
+  right: 4%;
+  top: 5%;
+  width: 26%;
+  max-height: 22%;
+  height: auto;
+  left: auto;
+  z-index: 6;
+}
+
+.capsule-flatlay-card__footer {
+  padding: 12px 14px 14px;
+  font-family: var(--font-sans);
+  font-weight: 300;
+}
+
+.capsule-flatlay-card__name {
+  font-family: 'IM Fell English', Georgia, serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: #f5e7de;
+  margin: 0 0 10px;
+}
+
+.capsule-flatlay-card__pills {
   display: flex;
   flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.capsule-flatlay-card__pill {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 10px;
+  line-height: 1.2;
+  color: rgba(245, 231, 222, 0.6);
+  border: 0.5px solid rgba(245, 231, 222, 0.25);
+  border-radius: 20px;
+  padding: 3px 8px;
+}
+
+.capsule-flatlay-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.capsule-flatlay-card__dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.capsule-flatlay-card__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 0.5px solid rgba(245, 231, 222, 0.2);
+}
+
+.capsule-flatlay-card__harmony-badge {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 11px;
+  line-height: 1;
+  padding: 6px 12px;
+  background: rgba(3, 94, 123, 0.7);
+  color: #f5e7de;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.capsule-flatlay-add-card {
+  flex: 0 0 var(--capsule-card-w);
+  width: var(--capsule-card-w);
+  min-height: min(410px, 75vh);
+  border-radius: 14px;
+  border: 1px dashed rgba(245, 231, 222, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  text-decoration: none;
+  box-sizing: border-box;
+  align-self: stretch;
+}
+
+.capsule-flatlay-add-card:hover {
+  border-color: rgba(245, 231, 222, 0.35);
+  color: inherit;
+}
+
+.capsule-flatlay-add-card__plus {
+  font-size: 2.25rem;
+  font-weight: 300;
+  line-height: 1;
+  color: #844f39;
+  font-family: var(--font-sans);
+}
+
+.capsule-flatlay-add-card__label {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 0.82rem;
+  color: #844f39;
+}
+
+.capsule-flatlay-empty-copy {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  font-size: 0.88rem;
+  color: rgba(245, 231, 222, 0.88);
+  margin: 0 0 1rem;
+  line-height: 1.5;
 }
 
 .page-title {
   font-family: var(--font-serif);
-  font-size: clamp(1.95rem, 4.5vw, 2.5rem);
+  font-size: clamp(1.45rem, 5vw + 0.5rem, 2.5rem);
   color: var(--brown-dark);
   margin-bottom: 0.5rem;
   letter-spacing: 0.02em;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 .page-eyebrow {
@@ -805,11 +1077,14 @@ textarea {
 
 .brand-header__wordmark {
   font-family: var(--font-serif);
-  font-size: 2rem;
+  font-size: clamp(1.35rem, 4vw + 0.5rem, 2rem);
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--brown-dark);
   margin-top: 0.5rem;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
 .brand-header__meta {
@@ -953,11 +1228,15 @@ textarea {
 /* App layout — mobile-first */
 .app-layout {
   min-height: 100vh;
-  padding-bottom: 72px;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  padding-bottom: calc(72px + var(--safe-bottom));
 }
 
 .app-main {
   min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
 }
 
 .bottom-nav {
@@ -965,13 +1244,16 @@ textarea {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  min-height: var(--nav-bar-h);
+  padding-bottom: var(--safe-bottom);
+  padding-left: max(0.25rem, var(--safe-left));
+  padding-right: max(0.25rem, var(--safe-right));
   background: var(--surface-editorial);
   border-top: 1px solid var(--nav-border);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 0.5rem;
+  padding-top: 0.35rem;
   box-shadow: none;
   z-index: 100;
 }
@@ -982,13 +1264,17 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 0.2rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.45rem min(0.75rem, 2vw);
   color: var(--nav-muted);
   text-decoration: none;
-  font-size: 0.7rem;
+  font-size: clamp(0.58rem, 1.5vw + 0.35rem, 0.7rem);
   letter-spacing: 0.05em;
   border-radius: var(--radius-sm);
   transition: color var(--transition-fast), background var(--transition-fast);
+  touch-action: manipulation;
+  min-width: 0;
+  flex: 1 1 0;
+  max-width: 5.5rem;
 }
 
 .nav-link:hover {
@@ -1021,11 +1307,11 @@ textarea {
 /* Design room — circular sky-blue FAB with star-earring image (above bottom nav) */
 .design-room-fab {
   position: fixed;
-  bottom: calc(64px + 12px + env(safe-area-inset-bottom, 0px));
-  right: 12px;
+  bottom: calc(var(--nav-bar-h) + 12px + var(--safe-bottom));
+  right: max(12px, var(--safe-right));
   z-index: 101;
-  width: 68px;
-  height: 68px;
+  width: clamp(52px, 14vw, 68px);
+  height: clamp(52px, 14vw, 68px);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1357,4 +1643,77 @@ textarea {
   font-weight: 700;
   width: 1.1em;
   text-align: center;
+}
+
+/* —— Responsive: tablets, notches, landscape phones —— */
+@media (min-width: 600px) {
+  :root {
+    --page-max: 560px;
+  }
+}
+
+@media (min-width: 900px) {
+  :root {
+    --page-max: 640px;
+  }
+}
+
+@media (max-width: 359px) {
+  .page {
+    padding-left: max(0.65rem, var(--safe-left));
+    padding-right: max(0.65rem, var(--safe-right));
+  }
+
+  .nav-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.02em;
+  }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .brand-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .brand-tagline {
+    font-size: clamp(0.95rem, 1.5vw + 0.5rem, 1.2rem);
+  }
+
+  .page {
+    padding-top: max(0.5rem, var(--safe-top));
+  }
+
+  .nav-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .nav-link {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .brand-header__logo {
+    max-width: 100px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Larger tap targets on touch devices */
+@media (pointer: coarse) {
+  .btn:not(.btn-ghost) {
+    min-height: 44px;
+  }
+
+  .field-control {
+    min-height: 44px;
+  }
 }

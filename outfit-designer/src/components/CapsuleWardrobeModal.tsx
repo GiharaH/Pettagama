@@ -1,5 +1,6 @@
 import type { ClothingItem } from './WardrobeSelector'
 import { X, Calendar } from 'lucide-react'
+import { DesignRoomCutoutImage } from './DesignRoomCutoutImage'
 
 export interface SavedOutfit {
   id: string
@@ -63,14 +64,21 @@ export function CapsuleWardrobeModal({
                   className="border-2 border-black bg-white overflow-hidden"
                   style={{ boxShadow: '3px 3px 0px black' }}
                 >
-                  <div className="bg-gradient-to-b from-gray-50 to-gray-100 p-4 border-b-2 border-black">
+                  <div className="p-4 border-b-2 border-black bg-white">
                     <div className="grid grid-cols-3 gap-2">
                       {Object.values(outfit.items)
                         .filter((item): item is ClothingItem => item !== null)
                         .slice(0, 3)
                         .map((item, idx) => (
-                          <div key={idx} className="aspect-square border border-black">
-                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          <div
+                            key={idx}
+                            className="aspect-square border border-black design-room-garment-surface flex items-center justify-center overflow-hidden"
+                          >
+                            <DesignRoomCutoutImage
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-contain"
+                            />
                           </div>
                         ))}
                     </div>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   deleteCustomCapsule,
@@ -8,7 +8,8 @@ import {
 } from '@/lib/storage'
 import { PRESET_CAPSULES, isPresetCapsuleId, paletteHexesFromOutfits, averageHarmonyScores, formatCapsuleDate } from '@/lib/capsules'
 import type { CapsuleSavedEntry } from '@/types'
-import { OutfitCard } from '@/components/OutfitCard'
+import { CapsuleFlatLayOutfitCard } from '@/components/CapsuleFlatLayOutfitCard'
+import { preloadGarmentBackgroundRemoval } from '@/lib/garmentCutoutCache'
 import '@/styles/theme.css'
 
 function getEntriesForRouteId(capsuleId: string | undefined): {
@@ -42,6 +43,10 @@ export function CapsuleDetailPage() {
   const bundle = useMemo(() => getEntriesForRouteId(capsuleId), [capsuleId, tick])
   const refresh = () => setTick((n) => n + 1)
 
+  useEffect(() => {
+    void preloadGarmentBackgroundRemoval()
+  }, [])
+
   if (!capsuleId || !bundle) {
     return (
       <div className="page page--capsule">
@@ -73,6 +78,8 @@ export function CapsuleDetailPage() {
     navigate('/capsule')
   }
 
+  const addOutfitHref = isCustom ? `/?capsuleTarget=${encodeURIComponent(capsuleId)}` : '/'
+
   return (
     <div className="page page--capsule">
       <nav className="capsule-detail-nav">
@@ -102,43 +109,49 @@ export function CapsuleDetailPage() {
         )}
       </div>
 
-      {entries.length === 0 ? (
-        <div className="card card-accent-mid" style={{ textAlign: 'center', padding: '1.5rem' }}>
-          <p style={{ margin: 0 }}>
-            Nothing here yet — save from Home (suggested outfits) or Design Room.
-            {isCustom && (
-              <>
-                {' '}
-                <Link to={`/?capsuleTarget=${encodeURIComponent(capsuleId)}`}>Open Home to save into this capsule</Link>.
-              </>
-            )}
-          </p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {entries.map((entry) => (
-            <div key={entry.outfit.id} className="capsule-detail-row">
-              <OutfitCard outfit={entry.outfit} />
-              <div className="capsule-detail-row__meta">
-                {entry.harmonyScore != null && (
-                  <span className="capsule-detail-row__score">Design Room score when saved · {entry.harmonyScore}</span>
-                )}
-                <span className="capsule-detail-row__dates">
-                  Saved {formatCapsuleDate(entry.savedAt)}
-                  {entry.lastWornAt && ` · Worn ${formatCapsuleDate(entry.lastWornAt)}`}
+      <section className="capsule-flatlay-section" aria-label="Saved outfits in this capsule">
+        <h2 className="capsule-flatlay-row-label">Saved looks</h2>
+        <div className="capsule-flatlay-row">
+          {entries.map((entry, index) => (
+            <div key={entry.outfit.id} className="capsule-flatlay-slide">
+              <CapsuleFlatLayOutfitCard entry={entry} variantIndex={index} />
+              <div className="capsule-flatlay-slide__actions">
+                <button type="button" className="capsule-flatlay-slide__action" onClick={() => handleWorn(entry.outfit.id)}>
+                  Mark worn
+                </button>
+                <span className="capsule-flatlay-slide__action-sep" aria-hidden>
+                  ·
                 </span>
-              </div>
-              <div className="capsule-detail-row__actions">
-                <button type="button" className="btn btn-ghost" onClick={() => handleWorn(entry.outfit.id)}>
-                  Mark worn today
+                <button type="button" className="capsule-flatlay-slide__action" onClick={() => handleRemove(entry.outfit.id)}>
+                  Remove
                 </button>
-                <button type="button" className="btn btn-ghost" onClick={() => handleRemove(entry.outfit.id)}>
-                  Remove from capsule
-                </button>
+                <span className="capsule-flatlay-slide__saved">
+                  Saved {formatCapsuleDate(entry.savedAt)}
+                  {entry.lastWornAt ? ` · Worn ${formatCapsuleDate(entry.lastWornAt)}` : ''}
+                </span>
               </div>
             </div>
           ))}
+          <Link to={addOutfitHref} className="capsule-flatlay-add-card">
+            <span className="capsule-flatlay-add-card__plus" aria-hidden>
+              +
+            </span>
+            <span className="capsule-flatlay-add-card__label">Add outfit</span>
+          </Link>
         </div>
+      </section>
+
+      {entries.length === 0 && (
+        <p className="capsule-flatlay-empty-copy">
+          Nothing here yet — save from Home (suggested outfits) or{' '}
+          <Link to="/design-room">Design Room</Link>.
+          {isCustom && (
+            <>
+              {' '}
+              <Link to={addOutfitHref}>Open Home to save into this capsule</Link>.
+            </>
+          )}
+        </p>
       )}
 
       {isCustom && (

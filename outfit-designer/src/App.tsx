@@ -155,8 +155,8 @@ export default function DesignRoomApp({ onBack }: { onBack?: () => void }) {
           </div>
 
           <div className="p-3">
-            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-3">
-              <div className="border-2 border-black bg-gray-100 p-3 h-[500px] lg:h-[600px]">
+            <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-3 design-room-grid">
+              <div className="design-room-col border-2 border-black bg-gray-100 p-3 h-[500px] lg:h-[600px]">
                 <h3 className="mb-3 border-b border-black pb-2 font-bold">Your Wardrobe</h3>
                 <WardrobeSelector
                   items={wardrobeItems}
@@ -167,12 +167,12 @@ export default function DesignRoomApp({ onBack }: { onBack?: () => void }) {
                 />
               </div>
 
-              <div className="border-2 border-black bg-gray-100 p-3 h-[500px] lg:h-[600px]">
+              <div className="design-room-col border-2 border-black bg-gray-100 p-3 h-[500px] lg:h-[600px]">
                 <h2 className="mb-3 border-b border-black pb-2 font-bold">Outfit Preview</h2>
                 <OutfitCanvas selectedItems={selectedItems} />
               </div>
 
-              <div className="border-2 border-black bg-gray-100 p-3 h-[500px] lg:h-[600px]">
+              <div className="design-room-col border-2 border-black bg-gray-100 p-3 h-[500px] lg:h-[600px]">
                 <h3 className="mb-3 border-b border-black pb-2 font-bold">Style Feedback</h3>
                 <StylingFeedback
                   selectedItems={selectedItems}
