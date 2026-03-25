@@ -11,7 +11,7 @@ Pettagama is an AI-ready outfit suggestion app: mobile-first web, weather-aware,
 - **Weather integration** — OpenWeatherMap (optional); temperature bands drive layer suggestions
 - **3 outfit suggestions** — Top + bottom + optional outerwear, footwear, and accessories
 - **Occasions** — Casual (default), office, party, wedding, cultural, travel, and more
-- **Favourites** — Save suggested outfits for later
+- **Capsule** — Save suggested outfits for later
 
 ## Run locally
 

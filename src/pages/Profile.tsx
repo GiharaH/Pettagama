@@ -64,7 +64,7 @@ export function Profile() {
   }
 
   return (
-    <div className="page">
+    <div className="page page--profile">
       <BrandHeader eyebrow="Profile" title="Profile" tagline="Let your wardrobe think for you." />
       <div className="divider" style={{ marginLeft: 'auto', marginRight: 'auto' }} />
 

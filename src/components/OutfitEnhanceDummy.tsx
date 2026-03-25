@@ -9,60 +9,44 @@ interface OutfitEnhanceDummyProps {
   swatchColors: [string, string, string]
 }
 
-function SilhouetteBg() {
-  return (
-    <svg
-      className="outfit-dummy__silhouette-svg"
-      viewBox="0 0 100 188"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <ellipse cx="50" cy="17" rx="11" ry="12" fill="var(--dummy-skin, #e8dcc8)" />
-      <path
-        d="M50 28c-8 0-14 5-15 12l-8 18c-2 5-1 11 2 15l6 8c2 3 5 5 9 5h12c4 0 7-2 9-5l6-8c3-4 4-10 2-15l-8-18c-1-7-7-12-15-12z"
-        fill="var(--dummy-skin, #e8dcc8)"
-      />
-      <path
-        d="M32 78l-4 22 6 68h12l4-38 4 38h12l6-68-4-22c-8 4-16 6-24 6s-16-2-24-6z"
-        fill="var(--dummy-skin, #e8dcc8)"
-      />
-    </svg>
-  )
-}
+/** Floating flat-lay cluster: no mannequin — pieces arranged on a cream surface. */
+function FloatingCluster({ outfit }: { outfit: Outfit }) {
+  const acc = outfit.accessories.slice(0, 2)
 
-function BodyPatches({ outfit }: { outfit: Outfit }) {
   return (
-    <>
-      {outfit.top && (
-        <img
-          src={outfit.top.imageUrl}
-          alt=""
-          className="outfit-dummy__patch outfit-dummy__patch--top"
-        />
-      )}
-      {outfit.bottom && (
-        <img
-          src={outfit.bottom.imageUrl}
-          alt=""
-          className="outfit-dummy__patch outfit-dummy__patch--bottom"
-        />
-      )}
-      {outfit.footwear && (
-        <img
-          src={outfit.footwear.imageUrl}
-          alt=""
-          className="outfit-dummy__patch outfit-dummy__patch--shoe"
-        />
-      )}
+    <div className="outfit-flatlay__cluster">
       {outfit.outerwear && (
         <img
           src={outfit.outerwear.imageUrl}
           alt=""
-          className="outfit-dummy__patch outfit-dummy__patch--outer"
+          className="outfit-flatlay__img outfit-flatlay__slot outfit-flatlay__slot--outer"
         />
       )}
-    </>
+      <div className="outfit-flatlay__row">
+        {outfit.top && (
+          <img src={outfit.top.imageUrl} alt="" className="outfit-flatlay__img outfit-flatlay__slot outfit-flatlay__slot--top" />
+        )}
+        {outfit.bottom && (
+          <img
+            src={outfit.bottom.imageUrl}
+            alt=""
+            className="outfit-flatlay__img outfit-flatlay__slot outfit-flatlay__slot--bottom"
+          />
+        )}
+      </div>
+      <div className="outfit-flatlay__row outfit-flatlay__row--foot">
+        {outfit.footwear && (
+          <img
+            src={outfit.footwear.imageUrl}
+            alt=""
+            className="outfit-flatlay__img outfit-flatlay__slot outfit-flatlay__slot--foot"
+          />
+        )}
+        {acc.map((item) => (
+          <img key={item.id} src={item.imageUrl} alt="" className="outfit-flatlay__img outfit-flatlay__slot outfit-flatlay__slot--acc" />
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -72,36 +56,36 @@ export function OutfitEnhanceDummy({ outfit, addImageUrls, swatchColors }: Outfi
   return (
     <div className="outfit-enhance-dummy">
       <div className="outfit-enhance-dummy__row">
-        <div className="outfit-dummy__column">
-          <div className="outfit-dummy__label outfit-dummy__label--before">Before</div>
-          <div className="outfit-dummy__canvas">
-            <SilhouetteBg />
-            <BodyPatches outfit={outfit} />
+        <div className="outfit-flatlay__column">
+          <div className="outfit-flatlay__label outfit-flatlay__label--before">Before</div>
+          <div className="outfit-flatlay__board">
+            <FloatingCluster outfit={outfit} />
           </div>
         </div>
 
-        <div className="outfit-dummy__column outfit-dummy__column--after">
-          <div className="outfit-dummy__label outfit-dummy__label--after">After</div>
-          <div className="outfit-dummy__frame-after">
-            <div className="outfit-dummy__canvas">
-              <SilhouetteBg />
-              <BodyPatches outfit={outfit} />
-              {extras.map((url, i) => (
-                <img
-                  key={`${url}-${i}`}
-                  src={url}
-                  alt=""
-                  className={`outfit-dummy__patch outfit-dummy__patch--add outfit-dummy__patch--add${i}`}
-                />
-              ))}
-              <div className="outfit-dummy__swatches" aria-label="Suggested colours">
-                {swatchColors.map((hex, i) => (
-                  <span key={`swatch-${i}`} className="outfit-dummy__swatch" style={{ backgroundColor: hex }} />
+        <div className="outfit-flatlay__column outfit-flatlay__column--after">
+          <div className="outfit-flatlay__label outfit-flatlay__label--after">After</div>
+          <div className="outfit-flatlay__board outfit-flatlay__board--after">
+            <FloatingCluster outfit={outfit} />
+            {extras.length > 0 && (
+              <div className="outfit-flatlay__extras">
+                {extras.map((url, i) => (
+                  <img
+                    key={`${url}-${i}`}
+                    src={url}
+                    alt=""
+                    className={`outfit-flatlay__img outfit-flatlay__extra outfit-flatlay__extra--${i}`}
+                  />
                 ))}
               </div>
+            )}
+            <div className="outfit-flatlay__swatches" aria-label="Suggested colours">
+              {swatchColors.map((hex, i) => (
+                <span key={`swatch-${i}`} className="outfit-flatlay__swatch" style={{ backgroundColor: hex }} />
+              ))}
             </div>
           </div>
-          <p className="outfit-dummy__after-note">+ suggestions</p>
+          <p className="outfit-flatlay__after-note">+ suggestions</p>
         </div>
       </div>
     </div>

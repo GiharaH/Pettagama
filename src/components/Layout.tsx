@@ -10,7 +10,14 @@ export function Layout() {
       </main>
       <Nav />
       <Link to="/design-room" className="design-room-fab" aria-label="Open design room" title="Design room">
-        <img src="/logo-key.png" alt="" width={28} height={28} />
+        <img
+          src="/design-room-fab-icon.png"
+          alt=""
+          className="design-room-fab__img"
+          width={44}
+          height={52}
+          decoding="async"
+        />
       </Link>
     </div>
   )

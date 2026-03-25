@@ -34,7 +34,7 @@ export function OutfitCard({
   outfit,
   onSave,
   savedToFavourites,
-  saveButtonLabel = 'Save look to favourites',
+  saveButtonLabel = 'Save look to Capsule',
   improvements,
 }: OutfitCardProps) {
   const pieces = [
@@ -74,7 +74,7 @@ export function OutfitCard({
           onClick={onSave}
           disabled={savedToFavourites}
         >
-          {savedToFavourites ? 'Saved to Favourites' : saveButtonLabel}
+          {savedToFavourites ? 'Saved to Capsule' : saveButtonLabel}
         </button>
       )}
 

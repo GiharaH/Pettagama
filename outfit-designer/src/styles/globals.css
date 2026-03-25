@@ -16,3 +16,12 @@
 #design-room-root *::after {
   box-sizing: border-box;
 }
+
+#design-room-root .design-room-app-shell {
+  background-color: #1f0a0a;
+  background-image: url(/wallpaper-design-room.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  background-attachment: scroll;
+}

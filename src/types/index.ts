@@ -154,6 +154,17 @@ export interface WeatherState {
   cachedAt: number
 }
 
+/** One saved look inside a capsule (favourites / Design Room). */
+export interface CapsuleSavedEntry {
+  outfit: Outfit
+  savedAt: string
+  /** When the user last marked this look as worn */
+  lastWornAt?: string
+  /** Design Room overall style score (0–100), if saved from grading flow */
+  harmonyScore?: number
+}
+
+/** @deprecated Use CapsuleSavedEntry — kept for legacy call sites that only need outfit + savedAt */
 export interface FavouriteOutfit {
   outfit: Outfit
   savedAt: string

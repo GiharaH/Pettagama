@@ -2,6 +2,7 @@ import type {
   UserProfile,
   WardrobeItem,
   FavouriteOutfit,
+  CapsuleSavedEntry,
   UserDetails,
   WishlistItem,
   Occasion,
@@ -11,6 +12,11 @@ import type {
 import type { ImprovementAction, OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
 import { wishlistKeyForAction } from '@/lib/wishlistKeys'
 import { outfitSignature } from '@/lib/outfitSignature'
+import {
+  type PresetCapsuleId,
+  PRESET_CAPSULE_ORDER,
+  presetCapsuleIdFromOccasion,
+} from '@/lib/capsules'
 
 const KEYS = {
   PROFILE: 'pettagama_profile',
@@ -88,28 +94,200 @@ export function saveWardrobe(items: WardrobeItem[]): void {
   localStorage.setItem(KEYS.WARDROBE, JSON.stringify(items))
 }
 
-export function getFavourites(): FavouriteOutfit[] {
+/** v2 persisted capsule wardrobe */
+export interface CapsulesStateV2 {
+  version: 2
+  presets: Record<PresetCapsuleId, CapsuleSavedEntry[]>
+  customCapsules: Array<{
+    id: string
+    name: string
+    createdAt: string
+    entries: CapsuleSavedEntry[]
+  }>
+}
+
+function emptyPresetRecord(): Record<PresetCapsuleId, CapsuleSavedEntry[]> {
+  const r = {} as Record<PresetCapsuleId, CapsuleSavedEntry[]>
+  for (const id of PRESET_CAPSULE_ORDER) {
+    r[id] = []
+  }
+  return r
+}
+
+function emptyCapsulesV2(): CapsulesStateV2 {
+  return { version: 2, presets: emptyPresetRecord(), customCapsules: [] }
+}
+
+function migrateV1ArrayToV2(rows: FavouriteOutfit[]): CapsulesStateV2 {
+  const state = emptyCapsulesV2()
+  for (const row of rows) {
+    const capsuleId = presetCapsuleIdFromOccasion(row.outfit.occasion)
+    state.presets[capsuleId].push({
+      outfit: row.outfit,
+      savedAt: row.savedAt,
+    })
+  }
+  return state
+}
+
+function normalizeV2(parsed: Partial<CapsulesStateV2>): CapsulesStateV2 {
+  const base = emptyCapsulesV2()
+  if (parsed.presets) {
+    for (const id of PRESET_CAPSULE_ORDER) {
+      const arr = parsed.presets[id]
+      base.presets[id] = Array.isArray(arr) ? arr : []
+    }
+  }
+  if (Array.isArray(parsed.customCapsules)) {
+    base.customCapsules = parsed.customCapsules.map((c) => ({
+      id: typeof c.id === 'string' ? c.id : `custom-${crypto.randomUUID()}`,
+      name: typeof c.name === 'string' ? c.name : 'My capsule',
+      createdAt: typeof c.createdAt === 'string' ? c.createdAt : new Date().toISOString(),
+      entries: Array.isArray(c.entries) ? c.entries : [],
+    }))
+  }
+  return base
+}
+
+export function loadCapsulesState(): CapsulesStateV2 {
   try {
     const raw = localStorage.getItem(KEYS.FAVOURITES)
-    if (!raw) return []
-    return JSON.parse(raw) as FavouriteOutfit[]
+    if (!raw) return emptyCapsulesV2()
+    const parsed = JSON.parse(raw) as unknown
+    if (Array.isArray(parsed)) {
+      const migrated = migrateV1ArrayToV2(parsed as FavouriteOutfit[])
+      persistCapsulesState(migrated)
+      return migrated
+    }
+    if (parsed && typeof parsed === 'object' && (parsed as CapsulesStateV2).version === 2) {
+      return normalizeV2(parsed as CapsulesStateV2)
+    }
   } catch {
-    return []
+    // fall through
   }
+  return emptyCapsulesV2()
 }
 
-export function saveFavourites(favourites: FavouriteOutfit[]): void {
-  localStorage.setItem(KEYS.FAVOURITES, JSON.stringify(favourites))
+export function persistCapsulesState(state: CapsulesStateV2): void {
+  localStorage.setItem(KEYS.FAVOURITES, JSON.stringify(state))
 }
 
-/** Save a look to favourites; skips if the same wardrobe combination is already saved. */
-export function saveFavouriteBySignature(outfit: FavouriteOutfit['outfit']): boolean {
+function allEntries(state: CapsulesStateV2): CapsuleSavedEntry[] {
+  const fromPresets = PRESET_CAPSULE_ORDER.flatMap((id) => state.presets[id])
+  const fromCustom = state.customCapsules.flatMap((c) => c.entries)
+  return [...fromPresets, ...fromCustom]
+}
+
+/** Flat list of every saved look (any capsule) — for Home “already saved” checks. */
+export function getAllCapsuleEntries(): CapsuleSavedEntry[] {
+  return allEntries(loadCapsulesState())
+}
+
+/** @deprecated Prefer getAllCapsuleEntries — same shape for backward compatibility */
+export function getFavourites(): FavouriteOutfit[] {
+  return getAllCapsuleEntries().map(({ outfit, savedAt }) => ({ outfit, savedAt }))
+}
+
+export function saveFavourites(_favourites: FavouriteOutfit[]): void {
+  void _favourites
+  console.warn('saveFavourites is deprecated; use persistCapsulesState / saveOutfitToCapsule')
+}
+
+export type SaveToCapsuleOptions = {
+  occasion?: Occasion
+  /** Preset id (e.g. office) or custom capsule id (custom-…) */
+  capsuleId?: string
+  harmonyScore?: number
+}
+
+/**
+ * Save a look into a capsule. Skips if the same wardrobe combination exists anywhere in Capsule.
+ * Target capsule: explicit `capsuleId`, else mapped from `occasion`, else from outfit.occasion.
+ */
+export function saveOutfitToCapsule(outfit: Outfit, options?: SaveToCapsuleOptions): boolean {
+  const state = loadCapsulesState()
   const sig = outfitSignature(outfit)
-  const favs = getFavourites()
-  if (favs.some((f) => outfitSignature(f.outfit) === sig)) return false
-  favs.push({ outfit, savedAt: new Date().toISOString() })
-  saveFavourites(favs)
+  if (allEntries(state).some((e) => outfitSignature(e.outfit) === sig)) return false
+
+  const entry: CapsuleSavedEntry = {
+    outfit,
+    savedAt: new Date().toISOString(),
+    harmonyScore: options?.harmonyScore,
+  }
+
+  let target = options?.capsuleId
+  if (!target) {
+    target = presetCapsuleIdFromOccasion(options?.occasion ?? outfit.occasion)
+  }
+
+  if (PRESET_CAPSULE_ORDER.includes(target as PresetCapsuleId)) {
+    state.presets[target as PresetCapsuleId].push(entry)
+  } else {
+    const cap = state.customCapsules.find((c) => c.id === target)
+    if (!cap) {
+      state.presets.everyday.push(entry)
+    } else {
+      cap.entries.push(entry)
+    }
+  }
+
+  persistCapsulesState(state)
   return true
+}
+
+/** @deprecated Use saveOutfitToCapsule */
+export function saveFavouriteBySignature(outfit: Outfit, options?: SaveToCapsuleOptions): boolean {
+  return saveOutfitToCapsule(outfit, options)
+}
+
+export function createCustomCapsule(name: string): string {
+  const trimmed = name.trim()
+  const state = loadCapsulesState()
+  const id = `custom-${crypto.randomUUID()}`
+  state.customCapsules.push({
+    id,
+    name: trimmed || 'My capsule',
+    createdAt: new Date().toISOString(),
+    entries: [],
+  })
+  persistCapsulesState(state)
+  return id
+}
+
+export function removeCapsuleEntry(capsuleId: string, outfitId: string): void {
+  const state = loadCapsulesState()
+  const pred = (e: CapsuleSavedEntry) => e.outfit.id !== outfitId
+
+  if (PRESET_CAPSULE_ORDER.includes(capsuleId as PresetCapsuleId)) {
+    state.presets[capsuleId as PresetCapsuleId] = state.presets[capsuleId as PresetCapsuleId].filter(pred)
+  } else {
+    const cap = state.customCapsules.find((c) => c.id === capsuleId)
+    if (cap) cap.entries = cap.entries.filter(pred)
+  }
+  persistCapsulesState(state)
+}
+
+export function markCapsuleOutfitWorn(capsuleId: string, outfitId: string): void {
+  const state = loadCapsulesState()
+  const now = new Date().toISOString()
+  const mark = (entries: CapsuleSavedEntry[]) => {
+    const e = entries.find((x) => x.outfit.id === outfitId)
+    if (e) e.lastWornAt = now
+  }
+  if (PRESET_CAPSULE_ORDER.includes(capsuleId as PresetCapsuleId)) {
+    mark(state.presets[capsuleId as PresetCapsuleId])
+  } else {
+    const cap = state.customCapsules.find((c) => c.id === capsuleId)
+    if (cap) mark(cap.entries)
+  }
+  persistCapsulesState(state)
+}
+
+export function deleteCustomCapsule(capsuleId: string): void {
+  if (!capsuleId.startsWith('custom-')) return
+  const state = loadCapsulesState()
+  state.customCapsules = state.customCapsules.filter((c) => c.id !== capsuleId)
+  persistCapsulesState(state)
 }
 
 export function getSuggestedOutfits(): SuggestedOutfitEntry[] {

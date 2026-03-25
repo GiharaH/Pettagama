@@ -19,7 +19,7 @@ export function Wishlist() {
       <div className="divider" style={{ marginLeft: 'auto', marginRight: 'auto' }} />
 
       {items.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '2rem', background: '#fff' }}>
+        <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
           <p style={{ marginBottom: '1rem', color: 'var(--brown-dark)' }}>
             Your wishlist is empty. Generate outfits on the Home page to see “Improve this outfit” suggestions you can act on.
           </p>
@@ -35,7 +35,6 @@ export function Wishlist() {
                 alignItems: 'center',
                 gap: '0.75rem',
                 flexWrap: 'wrap',
-                background: '#fff',
               }}
             >
               {item.imageUrl && (
@@ -56,7 +55,7 @@ export function Wishlist() {
               <button
                 type="button"
                 className="btn btn-ghost"
-                style={{ color: 'var(--brown-mid)', fontSize: '0.85rem' }}
+                style={{ fontSize: '0.85rem' }}
                 onClick={() => remove(item.id)}
                 aria-label={`Remove ${item.title} from wishlist`}
               >

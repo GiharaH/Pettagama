@@ -5,7 +5,9 @@ import { StylingFeedback } from './components/StylingFeedback'
 import { CapsuleWardrobeModal, type SavedOutfit } from './components/CapsuleWardrobeModal'
 import { RotateCcw, ChevronLeft } from 'lucide-react'
 import { toast, Toaster } from 'sonner'
-import { getWardrobe } from '@/lib/storage'
+import { getWardrobe, saveOutfitToCapsule } from '@/lib/storage'
+import { buildOutfitFromDesignRoomSelection } from '@/lib/designRoomToOutfit'
+import { analyzeDesignRoomItems } from '@/lib/styleScore'
 import { mapWardrobeToDesignRoomItems } from './mapWardrobeItems'
 import './styles/globals.css'
 
@@ -54,23 +56,41 @@ export default function DesignRoomApp({ onBack }: { onBack?: () => void }) {
       return
     }
 
-    const items = Object.values(selectedItems).filter((item): item is ClothingItem => item !== null)
-    const colors = items.map((item) => item.color.toLowerCase())
-    const colorSet = new Set(colors)
-    let score = 50 + itemCount * 5
-    if (colorSet.size <= 3) score += 20
-    if (selectedItems.tops && selectedItems.bottoms) score += 15
+    const wardrobe = getWardrobe()
+    const outfit = buildOutfitFromDesignRoomSelection(selectedItems, wardrobe)
+    if (!outfit) {
+      toast.error('Could not resolve wardrobe items — try re-selecting from your wardrobe')
+      return
+    }
+
+    const scoreItems = Object.values(selectedItems)
+      .filter((item): item is ClothingItem => item !== null)
+      .map((item) => ({ color: item.color, style: item.style }))
+    const analysis = analyzeDesignRoomItems(scoreItems, {
+      hasTop: selectedItems.tops !== null,
+      hasBottom: selectedItems.bottoms !== null,
+      hasShoes: selectedItems.shoes !== null,
+    })
+
+    const saved = saveOutfitToCapsule(outfit, {
+      capsuleId: 'everyday',
+      harmonyScore: analysis.score,
+    })
+    if (!saved) {
+      toast.error('This exact look is already in your Capsule')
+      return
+    }
 
     const newOutfit: SavedOutfit = {
-      id: Date.now().toString(),
+      id: outfit.id,
       name: `Outfit ${savedOutfits.length + 1}`,
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       items: { ...selectedItems },
-      score: Math.min(100, score),
+      score: analysis.score,
     }
 
     setSavedOutfits((prev) => [...prev, newOutfit])
-    toast.success('Outfit saved to your capsule wardrobe!')
+    toast.success('Saved to Capsule (Everyday) with your style score')
   }
 
   const handleLoadOutfit = (outfit: SavedOutfit) => {
@@ -96,7 +116,7 @@ export default function DesignRoomApp({ onBack }: { onBack?: () => void }) {
 
   return (
     <div
-      className="min-h-screen bg-black flex items-center justify-center p-3"
+      className="design-room-app-shell min-h-screen flex items-center justify-center p-3"
       style={{ fontFamily: 'Monaco, "Lucida Console", monospace' }}
     >
       <Toaster position="top-center" />

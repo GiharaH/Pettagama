@@ -61,7 +61,7 @@ function WishlistIcon() {
 const navItems = [
   { to: '/', label: 'Home', icon: <HomeIcon /> },
   { to: '/wardrobe', label: 'Wardrobe', icon: <WardrobeCircleIcon /> },
-  { to: '/favourites', label: 'Favourites', icon: <FavouritesIcon /> },
+  { to: '/capsule', label: 'Capsule', icon: <FavouritesIcon /> },
   { to: '/wishlist', label: 'Wishlist', icon: <WishlistIcon /> },
   { to: '/profile', label: 'Profile', icon: <ProfilePersonIcon /> },
 ]

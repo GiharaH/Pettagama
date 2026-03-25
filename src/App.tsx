@@ -6,7 +6,8 @@ import { Home } from '@/pages/Home'
 import { Wardrobe } from '@/pages/Wardrobe'
 import { AddItem } from '@/pages/AddItem'
 import { EditItem } from '@/pages/EditItem'
-import { Favourites } from '@/pages/Favourites'
+import { CapsuleListPage } from '@/pages/CapsuleListPage'
+import { CapsuleDetailPage } from '@/pages/CapsuleDetailPage'
 import { Wishlist } from '@/pages/Wishlist'
 import { Profile } from '@/pages/Profile'
 import { getProfile } from '@/lib/storage'
@@ -39,7 +40,9 @@ export default function App() {
           <Route path="wardrobe" element={<Wardrobe />} />
           <Route path="wardrobe/add" element={<AddItem />} />
           <Route path="wardrobe/edit/:id" element={<EditItem />} />
-          <Route path="favourites" element={<Favourites />} />
+          <Route path="capsule" element={<CapsuleListPage />} />
+          <Route path="capsule/:capsuleId" element={<CapsuleDetailPage />} />
+          <Route path="favourites" element={<Navigate to="/capsule" replace />} />
           <Route path="wishlist" element={<Wishlist />} />
           <Route path="profile" element={<Profile />} />
         </Route>

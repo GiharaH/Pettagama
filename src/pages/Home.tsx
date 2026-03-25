@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { getProfile, getUserDetails } from '@/lib/storage'
 import { getWardrobe } from '@/lib/storage'
 import { fetchWeather, getCachedWeather, setCachedWeather } from '@/lib/weather'
@@ -13,6 +13,7 @@ import {
   getFavourites,
   getRecentOutfitSignaturesSet,
   getSuggestedOutfits,
+  loadCapsulesState,
   recordOutfitsShown,
   saveFavouriteBySignature,
   saveSuggestedOutfits,
@@ -24,6 +25,7 @@ import { buildOutfitImprovements } from '@/lib/outfitImprovements'
 import '@/styles/theme.css'
 
 export function Home() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const profile = getProfile()
   const userDetails = getUserDetails()
   const [weather, setWeather] = useState<WeatherState | null>(getCachedWeather())
@@ -33,6 +35,14 @@ export function Home() {
   const [suggestError, setSuggestError] = useState<string | null>(null)
   const [savedEntries, setSavedEntries] = useState<SuggestedOutfitEntry[]>(() => getSuggestedOutfits())
   const [favSigs, setFavSigs] = useState(() => new Set(getFavourites().map((f) => outfitSignature(f.outfit))))
+
+  const rawCapsuleTarget = searchParams.get('capsuleTarget')
+  const customSaveTarget = useMemo(() => {
+    if (!rawCapsuleTarget || !rawCapsuleTarget.startsWith('custom-')) return null
+    const st = loadCapsulesState()
+    const c = st.customCapsules.find((x) => x.id === rawCapsuleTarget)
+    return c ? { id: c.id, name: c.name } : null
+  }, [rawCapsuleTarget])
 
   const wardrobe = getWardrobe()
   const hasEnough =
@@ -113,10 +123,20 @@ export function Home() {
     }, 600)
   }
 
-  const handleSaveFavourite = (outfit: Outfit) => {
-    if (saveFavouriteBySignature(outfit)) {
+  const handleSaveFavourite = (outfit: Outfit, occasion: Occasion) => {
+    const ok = saveFavouriteBySignature(outfit, {
+      occasion,
+      ...(customSaveTarget ? { capsuleId: customSaveTarget.id } : {}),
+    })
+    if (ok) {
       setFavSigs((prev) => new Set([...prev, outfitSignature(outfit)]))
     }
+  }
+
+  const clearCustomCapsuleTarget = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('capsuleTarget')
+    setSearchParams(next, { replace: true })
   }
 
   const displayName = userDetails.name?.trim() || null
@@ -130,6 +150,29 @@ export function Home() {
         title="What's the occasion today?"
         tagline="Let your wardrobe think for you."
       />
+      {customSaveTarget && (
+        <div
+          className="card card-accent-teal-mid"
+          style={{
+            marginBottom: '1rem',
+            padding: '0.75rem 1rem',
+            fontSize: '0.88rem',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.5rem',
+          }}
+          role="status"
+        >
+          <span>
+            Saving looks to <strong>{customSaveTarget.name}</strong> (custom capsule).
+          </span>
+          <button type="button" className="btn btn-ghost" style={{ fontSize: '0.8rem' }} onClick={clearCustomCapsuleTarget}>
+            Use default capsules
+          </button>
+        </div>
+      )}
       <div className="divider" style={{ marginLeft: 'auto', marginRight: 'auto' }} />
 
       <div className="card card-accent-teal" style={{ marginBottom: '1.25rem' }} role="region" aria-label="Today's weather">
@@ -147,10 +190,12 @@ export function Home() {
                   <div style={{ fontSize: '0.85rem', color: 'var(--brown-mid)' }}>{weather.description}</div>
                 </div>
               </div>
-              {weatherLoading && <p style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>Updating weather…</p>}
+              {weatherLoading && (
+                <p style={{ fontSize: '0.8rem', marginTop: '0.5rem', color: 'var(--home-muted-soft)' }}>Updating weather…</p>
+              )}
             </>
           ) : (
-            <p style={{ fontSize: '0.9rem', color: 'var(--black)', margin: 0 }}>
+            <p style={{ fontSize: '0.9rem', color: 'var(--home-muted)', margin: 0 }}>
               Enable location in Profile or settings for weather-based suggestions. You can still get outfit ideas from your wardrobe.
             </p>
           )}
@@ -185,7 +230,7 @@ export function Home() {
       )}
 
       {!hasEnough && (
-        <p style={{ fontSize: '0.85rem', color: 'var(--black)', marginTop: '1rem' }}>
+        <p style={{ fontSize: '0.85rem', color: 'var(--home-muted)', marginTop: '1rem' }}>
           Add at least one top and one bottom to your <Link to="/wardrobe">wardrobe</Link> to get suggestions.
         </p>
       )}
@@ -204,7 +249,7 @@ export function Home() {
                 <OutfitCard
                   outfit={entry.outfit}
                   improvements={entry.improvements}
-                  onSave={() => handleSaveFavourite(entry.outfit)}
+                  onSave={() => handleSaveFavourite(entry.outfit, entry.occasion)}
                   savedToFavourites={favSigs.has(outfitSignature(entry.outfit))}
                 />
                 <button
@@ -221,8 +266,8 @@ export function Home() {
         </section>
       )}
 
-      <p style={{ marginTop: '1.5rem', fontSize: '0.9rem' }}>
-        <Link to="/favourites">View saved outfits (Favourites)</Link>
+      <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--home-muted)' }}>
+        <Link to="/capsule">View saved outfits (Capsule)</Link>
         {' · '}
         <Link to="/wishlist">Wishlist</Link>
       </p>
