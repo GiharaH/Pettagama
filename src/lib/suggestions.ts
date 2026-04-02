@@ -1,22 +1,29 @@
 import type { WardrobeItem, Outfit, Occasion, WeatherState } from '@/types'
-import { CATEGORY_TO_GROUP } from '@/types'
 import { outfitSignature } from '@/lib/outfitSignature'
+import { generateOutfits as engineGenerateOutfits } from '@/lib/pettagama_outfit_engine'
 
 export interface SuggestOutfitsOptions {
   /** Wardrobe item id combinations to avoid (e.g. shown in the last 7 days). */
   excludeSignatures?: Set<string>
 }
 
-const MAX_TRIES = 1200
+const MAX_ENGINE_MULTIPLIER = 5
 
-function buildOutfit(
-  occasion: Occasion,
-  top: WardrobeItem,
-  bottom: WardrobeItem,
-  outerwear: WardrobeItem | undefined,
-  footwear: WardrobeItem | undefined,
-  accessories: WardrobeItem[]
+function mapEngineOutfitToApp(
+  engineOutfit: { items: AnyItem[] },
+  occasion: Occasion
 ): Outfit {
+  const items = engineOutfit.items ?? []
+  const top = items.find((i) => i.slot === 'top') as WardrobeItem | undefined
+  const bottom = items.find((i) => i.slot === 'bottom') as WardrobeItem | undefined
+  const outerwear = items.find((i) => i.slot === 'outerwear') as WardrobeItem | undefined
+  const footwear = items.find((i) => i.slot === 'footwear') as WardrobeItem | undefined
+
+  const accessorySlots = new Set(['accessory', 'bag', 'jewellery'])
+  const accessories = items
+    .filter((i): i is AnyItem & { slot: string } => typeof i.slot === 'string' && accessorySlots.has(i.slot))
+    .map((i) => i as unknown as WardrobeItem)
+
   return {
     id: `outfit-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
     top,
@@ -29,6 +36,8 @@ function buildOutfit(
   }
 }
 
+type AnyItem = WardrobeItem & { slot?: string; id?: string; category?: string }
+
 export function suggestOutfits(
   wardrobe: WardrobeItem[],
   weather: WeatherState,
@@ -36,57 +45,27 @@ export function suggestOutfits(
   count: number = 3,
   options?: SuggestOutfitsOptions
 ): Outfit[] {
-  const tops = wardrobe.filter((i) => CATEGORY_TO_GROUP[i.category] === 'tops')
-  const bottoms = wardrobe.filter((i) => CATEGORY_TO_GROUP[i.category] === 'bottoms')
-  const outerwear = wardrobe.filter((i) => CATEGORY_TO_GROUP[i.category] === 'outerwear')
-  const footwear = wardrobe.filter((i) => CATEGORY_TO_GROUP[i.category] === 'footwear')
-  const accessories = wardrobe.filter((i) => CATEGORY_TO_GROUP[i.category] === 'accessories')
-
-  const needOuterwear = weather.tempBand === 'cold' || weather.tempBand === 'mild'
   const exclude = options?.excludeSignatures ?? new Set<string>()
-  const outfits: Outfit[] = []
-  const batchUsed = new Set<string>()
+  const results: Outfit[] = []
+  const used = new Set<string>()
 
-  if (tops.length === 0 || bottoms.length === 0) return outfits
+  const maxToGenerate = Math.max(3, count * MAX_ENGINE_MULTIPLIER)
+  const engineOutfits = engineGenerateOutfits(wardrobe as unknown as AnyItem[], weather as unknown as AnyItem, occasion, maxToGenerate)
 
-  const daySeed = Math.floor(Date.now() / 86400000) % 9973
+  for (const engineOutfit of engineOutfits) {
+    const appOutfit = mapEngineOutfitToApp(engineOutfit as any, occasion)
 
-  const tryAdd = (
-    top: WardrobeItem,
-    bottom: WardrobeItem,
-    out: WardrobeItem | undefined,
-    shoe: WardrobeItem | undefined,
-    acc: WardrobeItem[]
-  ): boolean => {
-    const o = buildOutfit(occasion, top, bottom, out, shoe, acc)
-    const sig = outfitSignature(o)
-    if (batchUsed.has(sig)) return false
-    if (exclude.has(sig)) return false
-    batchUsed.add(sig)
-    outfits.push(o)
-    return true
+    // Skip incomplete (engine should normally include both top+bottom)
+    if (!appOutfit.top || !appOutfit.bottom) continue
+
+    const sig = outfitSignature(appOutfit)
+    if (exclude.has(sig)) continue
+    if (used.has(sig)) continue
+
+    used.add(sig)
+    results.push(appOutfit)
+    if (results.length >= count) break
   }
 
-  const pickIndices = (attempt: number) => {
-    const ti = (daySeed + attempt * 3) % tops.length
-    const bi = (daySeed + attempt * 5 + 1) % bottoms.length
-    const oi = (daySeed + attempt * 2) % Math.max(outerwear.length, 1)
-    const fi = (daySeed + attempt * 7) % Math.max(footwear.length, 1)
-    const ai = (daySeed + attempt) % Math.max(accessories.length, 1)
-    return { ti, bi, oi, fi, ai }
-  }
-
-  // Unique combos only; avoid recent (7-day) signatures and duplicates in this batch.
-  // May return fewer than `count` if the wardrobe cannot produce more distinct looks yet.
-  for (let attempt = 0; attempt < MAX_TRIES && outfits.length < count; attempt++) {
-    const { ti, bi, oi, fi, ai } = pickIndices(attempt)
-    const top = tops[ti]
-    const bottom = bottoms[bi]
-    const out = needOuterwear && outerwear.length > 0 ? outerwear[oi % outerwear.length] : undefined
-    const shoe = footwear.length > 0 ? footwear[fi % footwear.length] : undefined
-    const acc = accessories.length > 0 ? [accessories[ai % accessories.length]] : []
-    tryAdd(top, bottom, out, shoe, acc)
-  }
-
-  return outfits.slice(0, count)
+  return results
 }

@@ -10,8 +10,8 @@ import { CATEGORY_TO_GROUP } from '@/types'
 import { OutfitCard } from '@/components/OutfitCard'
 import {
   clearSuggestedOutfits,
+  getAllCapsuleEntries,
   getFavourites,
-  getRecentOutfitSignaturesSet,
   getSuggestedOutfits,
   loadCapsulesState,
   recordOutfitsShown,
@@ -32,7 +32,6 @@ export function Home() {
   const [weatherLoading, setWeatherLoading] = useState(false)
   const [occasion, setOccasion] = useState<Occasion>('casual')
   const [suggesting, setSuggesting] = useState(false)
-  const [suggestError, setSuggestError] = useState<string | null>(null)
   const [savedEntries, setSavedEntries] = useState<SuggestedOutfitEntry[]>(() => getSuggestedOutfits())
   const [favSigs, setFavSigs] = useState(() => new Set(getFavourites().map((f) => outfitSignature(f.outfit))))
 
@@ -93,21 +92,28 @@ export function Home() {
       tempBand: 'mild' as const,
       cachedAt: Date.now(),
     }
-    setSuggestError(null)
     setSuggesting(true)
     setTimeout(() => {
-      const recent = getRecentOutfitSignaturesSet()
       const prev = getSuggestedOutfits()
       const onPage = new Set(prev.map((e) => outfitSignature(e.outfit)))
-      const exclude = new Set([...recent, ...onPage])
-      const suggested = suggestOutfits(wardrobe, weatherToUse, occasion, 3, { excludeSignatures: exclude })
+      const savedToCapsule = new Set(getAllCapsuleEntries().map((e) => outfitSignature(e.outfit)))
+      // Only exclude outfits already saved in Capsule (and duplicates already on this page).
+      // This keeps occasion-based suggestions flowing even for smaller wardrobes.
+      const exclude = new Set([...savedToCapsule, ...onPage])
+      let suggested = suggestOutfits(wardrobe, weatherToUse, occasion, 3, { excludeSignatures: exclude })
+
+      // If we couldn't find anything new, retry by only excluding Capsule-saved outfits.
+      // This allows repeats for users who haven't saved anything yet (or have small wardrobes).
       if (suggested.length === 0) {
-        setSuggestError(
-          'No new outfits available right now. Remove some suggestions below, wait up to a week for repeats, or add more wardrobe items.'
-        )
-        setSuggesting(false)
-        return
+        suggested = suggestOutfits(wardrobe, weatherToUse, occasion, 3, { excludeSignatures: savedToCapsule })
       }
+
+      // Last resort: always produce *something* (never block the user).
+      // We still avoid repeats against Capsule wherever possible above.
+      if (suggested.length === 0) {
+        suggested = suggestOutfits(wardrobe, weatherToUse, occasion, 3)
+      }
+
       const addedAt = new Date().toISOString()
       const newEntries: SuggestedOutfitEntry[] = suggested.map((o) => ({
         outfit: o,
@@ -117,6 +123,7 @@ export function Home() {
         addedAt,
       }))
       saveSuggestedOutfits([...prev, ...newEntries])
+      // Keep tracking for analytics/recent history, but it no longer blocks suggestions.
       recordOutfitsShown(suggested.map(outfitSignature))
       setSavedEntries(getSuggestedOutfits())
       setSuggesting(false)
@@ -223,11 +230,7 @@ export function Home() {
         {suggesting ? 'Suggesting…' : 'Suggest 3 outfits'}
       </button>
 
-      {suggestError && (
-        <div className="card card-accent-mid" style={{ marginTop: '1rem', fontSize: '0.9rem' }} role="alert">
-          {suggestError}
-        </div>
-      )}
+      {/* Intentionally no blocking “no outfits available” message — always generate something. */}
 
       {!hasEnough && (
         <p style={{ fontSize: '0.85rem', color: 'var(--home-muted)', marginTop: '1rem' }}>

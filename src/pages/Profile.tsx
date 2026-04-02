@@ -76,21 +76,13 @@ export function Profile() {
         {/* Profile picture */}
         <label className="field-label">Profile picture</label>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-          <div
-            style={{
-              width: 96,
-              height: 96,
-              borderRadius: '50%',
-              overflow: 'hidden',
-              background: 'var(--cream)',
-              border: '2px solid rgba(84,49,26,0.2)',
-              flexShrink: 0,
-            }}
-          >
+          <div className="profile-photo-frame">
             {profilePictureUrl ? (
               <img src={profilePictureUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brown-mid)', fontSize: '2rem' }} aria-hidden>👤</div>
+              <div className="profile-photo-placeholder" aria-hidden>
+                👤
+              </div>
             )}
           </div>
           <div>
@@ -113,7 +105,9 @@ export function Profile() {
           </div>
         </div>
 
-        <label className="field-label" htmlFor="profile-name">Name</label>
+        <label className="field-label field-label--accent" htmlFor="profile-name">
+          Name
+        </label>
         <input
           id="profile-name"
           type="text"
@@ -124,7 +118,9 @@ export function Profile() {
           style={{ marginBottom: '1rem' }}
         />
 
-        <label className="field-label" htmlFor="profile-body-shape">Body type</label>
+        <label className="field-label field-label--accent" htmlFor="profile-body-shape">
+          Body type
+        </label>
         <select
           id="profile-body-shape"
           className="field-control"
@@ -139,7 +135,9 @@ export function Profile() {
           <option value="prefer_not_to_say">Prefer not to say</option>
         </select>
 
-        <label className="field-label" htmlFor="profile-gender">Gender</label>
+        <label className="field-label field-label--accent" htmlFor="profile-gender">
+          Gender
+        </label>
         <select
           id="profile-gender"
           className="field-control"
@@ -154,7 +152,9 @@ export function Profile() {
           <option value="prefer_not_to_say">Prefer not to say</option>
         </select>
 
-        <label className="field-label" htmlFor="profile-age">Age</label>
+        <label className="field-label field-label--accent" htmlFor="profile-age">
+          Age
+        </label>
         <input
           id="profile-age"
           type="number"
@@ -167,7 +167,9 @@ export function Profile() {
           style={{ marginBottom: '1rem' }}
         />
 
-        <label className="field-label" htmlFor="profile-height">Height (cm)</label>
+        <label className="field-label field-label--accent" htmlFor="profile-height">
+          Height (cm)
+        </label>
         <input
           id="profile-height"
           type="number"
@@ -180,7 +182,9 @@ export function Profile() {
           style={{ marginBottom: '1rem' }}
         />
 
-        <label className="field-label" htmlFor="profile-weight">Weight (kg)</label>
+        <label className="field-label field-label--accent" htmlFor="profile-weight">
+          Weight (kg)
+        </label>
         <input
           id="profile-weight"
           type="number"

@@ -160,6 +160,23 @@ export function OutfitCard({
             Improve this outfit
           </div>
 
+          {(improvements.hairSuggestion || improvements.shoeTheorySuggestion) && (
+            <div style={{ fontSize: '0.82rem', color: 'var(--brown-mid)', marginBottom: '0.6rem', lineHeight: 1.35 }}>
+              {improvements.hairSuggestion && (
+                <div>
+                  <strong style={{ color: 'var(--brown-dark)', fontWeight: 600 }}>Hair</strong>{' '}
+                  <span>{improvements.hairSuggestion}</span>
+                </div>
+              )}
+              {improvements.shoeTheorySuggestion && (
+                <div style={{ marginTop: improvements.hairSuggestion ? '0.25rem' : 0 }}>
+                  <strong style={{ color: 'var(--brown-dark)', fontWeight: 600 }}>Shoes</strong>{' '}
+                  <span>{improvements.shoeTheorySuggestion}</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {enhanceVisuals && (
             <OutfitEnhanceDummy
               outfit={outfit}

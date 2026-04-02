@@ -17,6 +17,7 @@ export function AddItem() {
   const fileInput = useRef<HTMLInputElement>(null)
   const [step, setStep] = useState<'upload' | 'details'>('upload')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [dominantColour, setDominantColour] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [category, setCategory] = useState<WardrobeCategory>(ALL_CATEGORIES[0])
   const [colourGroup, setColourGroup] = useState<ColourGroup>('neutral')
@@ -30,16 +31,10 @@ export function AddItem() {
     if (!file) return
     setProcessingPhoto(true)
     try {
-      const dataUrl = await processWardrobeUpload(file)
-      setPreviewUrl(dataUrl)
+      const { catalogUrl, dominantColour } = await processWardrobeUpload(file)
+      setPreviewUrl(catalogUrl)
+      setDominantColour(dominantColour)
       setStep('details')
-    } catch {
-      const reader = new FileReader()
-      reader.onload = () => {
-        setPreviewUrl(reader.result as string)
-        setStep('details')
-      }
-      reader.readAsDataURL(file)
     } finally {
       setProcessingPhoto(false)
       e.target.value = ''
@@ -74,6 +69,7 @@ export function AddItem() {
       id: generateId(),
       name: name.trim() || 'Untitled',
       imageUrl: previewUrl,
+      ...(dominantColour ? { dominantColour } : {}),
       category,
       colourGroup,
       season,

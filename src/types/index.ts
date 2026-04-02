@@ -107,6 +107,11 @@ export interface WardrobeItem {
   id: string
   name: string
   imageUrl: string
+  /**
+   * Extracted dominant colour in hex form (e.g. "#A34B2C") from the uploaded image.
+   * Used for outfit colour harmony scoring.
+   */
+  dominantColour?: string
   category: WardrobeCategory
   colourGroup: ColourGroup
   season: SeasonSuitability

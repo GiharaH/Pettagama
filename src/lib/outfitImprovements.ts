@@ -31,8 +31,106 @@ export interface ImprovementDirection {
 
 export interface OutfitImprovementSuggestion {
   overall_explanation: string
+  /** Attachment-based styling tip inferred from neckline/V-line cues. */
+  hairSuggestion?: string
+  /** Attachment-based "shoe theory" tip inferred from bottom fit. */
+  shoeTheorySuggestion?: string
   missing_items: Array<{ item: string; reason: string; search_query: string }>
   directions: ImprovementDirection[]
+}
+
+function normalizeName(s?: string | null) {
+  return (s ?? '').toLowerCase().replace(/[\s-]+/g, ' ').trim()
+}
+
+type NecklineHint = 'v' | 'crew' | 'off_shoulder' | 'turtleneck' | 'strapless' | 'square' | 'sweetheart' | 'halter' | 'unknown'
+
+function inferNecklineHint(top?: WardrobeItem): NecklineHint {
+  if (!top) return 'unknown'
+  const name = normalizeName(top.name)
+
+  if (name.includes('v neck') || name.includes('v-neck') || name.includes('vneck') || name.includes('v line') || name.includes('v-line')) return 'v'
+  if (name.includes('off shoulder') || name.includes('off-shoulder')) return 'off_shoulder'
+  if (name.includes('turtleneck') || name.includes('high neck') || name.includes('high-neck')) return 'turtleneck'
+  if (name.includes('strapless') || name.includes('tube top')) return 'strapless'
+  if (name.includes('square neck') || name.includes('square-neck')) return 'square'
+  if (name.includes('sweetheart')) return 'sweetheart'
+  if (name.includes('halter')) return 'halter'
+  if (name.includes('crew neck') || name.includes('crew-neck') || name.includes('round neck') || name.includes('round-neck')) return 'crew'
+
+  // Category-based defaults (best-effort, since we don't store neckline explicitly).
+  if (top.category === 't_shirt' || top.category === 'long_sleeve' || top.category === 'sweater') return 'crew'
+  return 'unknown'
+}
+
+function hairstyleSuggestionFromNeckline(hint: NecklineHint): string {
+  switch (hint) {
+    case 'v':
+      return 'V-line / V-neck: try a sleek ponytail or soft waves to frame the neckline.'
+    case 'crew':
+      return 'Crew/round neck: a high ponytail or bun opens up the face and keeps it clean.'
+    case 'off_shoulder':
+      return 'Off-shoulder: wear hair down (soft waves) or a side-swept style to highlight the collarbone.'
+    case 'turtleneck':
+      return 'Turtleneck/high neck: a slick bun or high ponytail keeps the neckline sharp.'
+    case 'strapless':
+      return 'Strapless: an updo (bun/chignon) or half-up style adds elegance and lengthens the neck.'
+    case 'square':
+      return 'Square neck: a low bun or half-up waves balances the structured neckline.'
+    case 'sweetheart':
+      return 'Sweetheart: soft waves or a half-up style complements the curve of the neckline.'
+    case 'halter':
+      return 'Halter: a high ponytail or bun shows the shoulders and keeps the back clean.'
+    default:
+      return 'Hair tip: a clean pony/bun is a safe match for most necklines.'
+  }
+}
+
+type BottomFitHint = 'skinny' | 'straight' | 'wide_leg' | 'flare' | 'bootcut' | 'leggings' | 'jogger' | 'skirt' | 'trousers' | 'unknown'
+
+function inferBottomFitHint(bottom?: WardrobeItem): BottomFitHint {
+  if (!bottom) return 'unknown'
+  const name = normalizeName(bottom.name)
+  const cat = String(bottom.category)
+
+  if (cat === 'leggings' || name.includes('leggings')) return 'leggings'
+  if (name.includes('jogger')) return 'jogger'
+  if (cat === 'skirt' || name.includes('skirt')) return 'skirt'
+  if (cat === 'trousers') return 'trousers'
+  if (name.includes('wide leg') || name.includes('wide-leg') || name.includes('palazzo')) return 'wide_leg'
+  if (name.includes('bootcut') || name.includes('boot cut')) return 'bootcut'
+  if (name.includes('flare') || name.includes('flared')) return 'flare'
+  if (name.includes('skinny')) return 'skinny'
+  if (name.includes('straight')) return 'straight'
+
+  // Defaults by category
+  if (cat === 'jeans' || cat === 'trousers') return 'straight'
+  return 'unknown'
+}
+
+function shoeTheorySuggestionFromBottomFit(hint: BottomFitHint): string {
+  switch (hint) {
+    case 'skinny':
+      return 'Shoe theory (skinny): knee-high boots, Chelsea boots, loafers/sneakers, or sleek heels.'
+    case 'straight':
+      return 'Shoe theory (straight): ankle booties, loafers/mules, court sneakers, or classic heels.'
+    case 'wide_leg':
+      return 'Shoe theory (wide-leg): square/point-toe boots, kitten heels, strappy heels, or sleek sneakers.'
+    case 'flare':
+      return 'Shoe theory (flare): heeled booties, sock boots, platforms, or pointed heels to lengthen the leg.'
+    case 'bootcut':
+      return 'Shoe theory (bootcut): pointed-toe boots or heels (or sleek loafers) to keep the line long.'
+    case 'leggings':
+      return 'Shoe theory (leggings): Chelsea boots, chunky boots, retro sneakers, or loafers for balance.'
+    case 'jogger':
+      return 'Shoe theory (jogger): clean sneakers, loafers, or a simple heel for an elevated sporty finish.'
+    case 'skirt':
+      return 'Shoe theory (skirts): mini → loafers/boots, midi → heels/ankle boots, maxi → sleek flats/heels.'
+    case 'trousers':
+      return 'Shoe theory (trousers): point-toe boots, court sneakers, mules, or strappy heels.'
+    default:
+      return 'Shoe theory: match volume—wider bottoms like chunkier/structured shoes; slimmer bottoms suit sleek shoes.'
+  }
 }
 
 function isDarkColourGroup(g: WardrobeItem['colourGroup']) {
@@ -122,7 +220,7 @@ export function buildOutfitImprovements(
   weather: WeatherState,
   occasion: Occasion
 ): OutfitImprovementSuggestion {
-  const { tops, bottoms, outerwear, footwear, accessories } = findCategoryItems(wardrobe)
+  const { outerwear, footwear, accessories } = findCategoryItems(wardrobe)
 
   const needOuterwear = weather.tempBand === 'cold' || weather.tempBand === 'mild'
   const top = outfit.top
@@ -136,7 +234,6 @@ export function buildOutfitImprovements(
     (!outw || isDarkColourGroup(outw.colourGroup))
 
   const preferredLight: WardrobeItem['colourGroup'][] = ['neutral', 'pastel', 'earth', 'warm']
-  const preferredCool: WardrobeItem['colourGroup'][] = ['cool']
 
   const currentTopHint = top ? colourHint(top.colourGroup) : 'beige/off-white'
   const currentBottomHint = bottom ? colourHint(bottom.colourGroup) : 'olive/earth tones'
@@ -164,34 +261,10 @@ export function buildOutfitImprovements(
     return pickByColourGroups(footwear, pref, shoe?.id)
   }
 
-  const getSwapTop = () => {
-    if (!top) return undefined
-    if (!isDarkColourGroup(top.colourGroup)) return undefined
-    return pickByColourGroups(tops, preferredLight, top.id)
-  }
-
-  const getSwapBottom = () => {
-    if (!bottom) return undefined
-    if (!isDarkColourGroup(bottom.colourGroup)) return undefined
-    return pickByColourGroups(bottoms, preferredLight, bottom.id)
-  }
-
   const casualAccessory = getAccessory()
   const elevatedOuterwear = needOuterwear ? getOuterwear() : undefined
   const casualFootwear = getFootwear(allDark ? ['neutral', 'pastel', 'earth'] : undefined)
-
-  const swapTop = getSwapTop()
-  const swapBottom = getSwapBottom()
-
-  const elevatedFootwear = getFootwear(preferredCool)
-  const streetAccessory = getAccessory({ excludeId: casualAccessory?.id })
-
-  const streetOuterwear =
-    needOuterwear && outw
-      ? getOuterwear()
-      : needOuterwear
-        ? getOuterwear()
-        : undefined
+  // Other direction helpers (swapTop/swapBottom/streetwear) intentionally removed.
 
   // Build directions with 2–3 actions each.
   const directions: ImprovementDirection[] = []
@@ -288,154 +361,8 @@ export function buildOutfitImprovements(
     })
   }
 
-  // Elevated direction
-  {
-    const actions: ImprovementAction[] = []
-
-    if (needOuterwear) {
-      if (elevatedOuterwear) {
-        actions.push(
-          actionForExisting(
-            'add',
-            elevatedOuterwear,
-            `Elevates the silhouette with a structured ${colourHint(elevatedOuterwear.colourGroup)} layer.`,
-            `structured coat blazer ${colourHint(elevatedOuterwear.colourGroup)} outfit`
-          )
-        )
-      } else {
-        const act = missingAction(
-          'Structured blazer / coat in off-white or olive',
-          'You have no outerwear for layering. Add a structured layer to make the look more polished.',
-          'off-white or olive structured blazer coat outfit'
-        )
-        actions.push(act)
-        pushMissingIfNeeded(act)
-      }
-    }
-
-    const swapTargetTop = swapTop
-    if (swapTargetTop) {
-      actions.push(
-        actionForExisting(
-          'swap',
-          swapTargetTop,
-          `Swapping to ${colourHint(swapTargetTop.colourGroup)} reduces an all-dark feel and keeps proportions flattering.`,
-          `top swap ${colourHint(swapTargetTop.colourGroup)} minimalist outfit`
-        )
-      )
-    } else if (!swapTargetTop && swapBottom) {
-      actions.push(
-        actionForExisting(
-          'swap',
-          swapBottom,
-          `Swap bottom to ${colourHint(swapBottom.colourGroup)} for a more balanced, elevated palette.`,
-          `bottom swap ${colourHint(swapBottom.colourGroup)} outfit`
-        )
-      )
-    }
-
-    const footwearForElevated = elevatedFootwear ?? casualFootwear
-    if (footwearForElevated && shoe && footwearForElevated.id !== shoe.id) {
-      actions.push(
-        actionForExisting(
-          'swap',
-          footwearForElevated,
-          `Refines the look with ${colourHint(footwearForElevated.colourGroup)} footwear that works with your off-white/olive direction.`,
-          `refined footwear ${footwearForElevated.category} ${colourHint(footwearForElevated.colourGroup)}`
-        )
-      )
-    }
-
-    // Ensure 2 actions minimum for the elevated direction.
-    if (actions.length < 2) {
-      const acc = getAccessory()
-      if (acc) {
-        actions.push(
-          actionForExisting(
-            'add',
-            acc,
-            `Polishes the outfit with a ${colourHint(acc.colourGroup)} accent that won’t make it feel all-dark.`,
-            `polished accent accessory ${acc.category} ${colourHint(acc.colourGroup)} outfit`
-          )
-        )
-      } else {
-        const act = missingAction(
-          'Minimal watch + belt combo (off-white/beige)',
-          'No accessories found. A subtle watch/belt pairing gives an elevated finish.',
-          'minimal watch belt outfit beige'
-        )
-        actions.push(act)
-        pushMissingIfNeeded(act)
-      }
-    }
-
-    directions.push({
-      title: 'Elevated minimal',
-      style_archetype: 'Minimal + polished (off-white/olive balance)',
-      actions: actions.slice(0, 3),
-    })
-  }
-
-  // Streetwear direction
-  {
-    const actions: ImprovementAction[] = []
-
-    if (streetOuterwear && needOuterwear) {
-      actions.push(
-        actionForExisting(
-          'add',
-          streetOuterwear,
-          `Layer with street-ready texture. Keep it ${colourHint(streetOuterwear.colourGroup)} to stay balanced.`,
-          `streetwear layering ${colourHint(streetOuterwear.colourGroup)} outerwear`
-        )
-      )
-    } else if (needOuterwear) {
-      const act = missingAction(
-        'Charcoal/olive overshirt or utility jacket',
-        'No streetwear-friendly layer in your wardrobe. Add one so the outfit reads as intentional for cooler weather.',
-        'charcoal overshirt utility jacket streetwear outfit'
-      )
-      actions.push(act)
-      pushMissingIfNeeded(act)
-    }
-
-    if (streetAccessory) {
-      actions.push(
-        actionForExisting(
-          'add',
-          streetAccessory,
-          `Adds street texture with a ${colourHint(streetAccessory.colourGroup)} accessory.`,
-          `statement accessory ${streetAccessory.category} ${colourHint(streetAccessory.colourGroup)} streetwear`
-        )
-      )
-    } else {
-      const act = missingAction(
-        'Structured crossbody bag or statement earrings',
-        'No accessories found. Add one statement piece to complete the streetwear direction.',
-        'structured crossbody bag statement earrings outfit'
-      )
-      actions.push(act)
-      pushMissingIfNeeded(act)
-    }
-
-    const sneakerCandidate = footwear.find((f) => f.category === 'sneakers') ?? getFootwear(preferredLight)
-    if (sneakerCandidate && shoe && sneakerCandidate.id !== shoe.id) {
-      actions.push(
-        actionForExisting(
-          'swap',
-          sneakerCandidate,
-          `Switch to sneakers for a street-ready finish while keeping colours grounded (${colourHint(sneakerCandidate.colourGroup)}).`,
-          `sneakers ${colourHint(sneakerCandidate.colourGroup)} outfit`
-        )
-      )
-    }
-
-    directions.push({
-      title: 'Streetwear balance',
-      style_archetype: 'Streetwear (overshirt + statement accent)',
-      actions: actions.slice(0, 3),
-    })
-  }
+  // NOTE: Intentionally only returning the "Casual, comfy upgrade" direction.
+  // Other directions (e.g. "Elevated minimal", "Streetwear balance") have been removed per product request.
 
   const missingItemsUnique = (() => {
     const map = new Map<string, { item: string; reason: string; search_query: string }>()
@@ -446,9 +373,13 @@ export function buildOutfitImprovements(
   })()
 
   const overall_explanation = `${occasion} · ${weather.tempBand} weather — balanced palette & layering ideas below.`
+  const hairSuggestion = hairstyleSuggestionFromNeckline(inferNecklineHint(outfit.top))
+  const shoeTheorySuggestion = shoeTheorySuggestionFromBottomFit(inferBottomFitHint(outfit.bottom))
 
   return {
     overall_explanation,
+    hairSuggestion,
+    shoeTheorySuggestion,
     missing_items: missingItemsUnique,
     directions,
   }
