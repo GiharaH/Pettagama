@@ -1,6 +1,7 @@
 import type { WardrobeItem, Outfit, Occasion, WeatherState } from '@/types'
 import { outfitSignature } from '@/lib/outfitSignature'
 import { generateOutfits as engineGenerateOutfits } from '@/lib/pettagama_outfit_engine'
+import { inferNecklineTypeForTop } from '@/lib/necklineInference'
 
 export interface SuggestOutfitsOptions {
   /** Wardrobe item id combinations to avoid (e.g. shown in the last 7 days). */
@@ -14,7 +15,10 @@ function mapEngineOutfitToApp(
   occasion: Occasion
 ): Outfit {
   const items = engineOutfit.items ?? []
-  const top = items.find((i) => i.slot === 'top') as WardrobeItem | undefined
+  const rawTop = items.find((i) => i.slot === 'top') as WardrobeItem | undefined
+  const top = rawTop
+    ? { ...rawTop, necklineType: rawTop.necklineType ?? inferNecklineTypeForTop(rawTop) }
+    : undefined
   const bottom = items.find((i) => i.slot === 'bottom') as WardrobeItem | undefined
   const outerwear = items.find((i) => i.slot === 'outerwear') as WardrobeItem | undefined
   const footwear = items.find((i) => i.slot === 'footwear') as WardrobeItem | undefined

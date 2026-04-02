@@ -31,8 +31,6 @@ export interface ImprovementDirection {
 
 export interface OutfitImprovementSuggestion {
   overall_explanation: string
-  /** Attachment-based styling tip inferred from neckline/V-line cues. */
-  hairSuggestion?: string
   /** Attachment-based "shoe theory" tip inferred from bottom fit. */
   shoeTheorySuggestion?: string
   missing_items: Array<{ item: string; reason: string; search_query: string }>
@@ -41,49 +39,6 @@ export interface OutfitImprovementSuggestion {
 
 function normalizeName(s?: string | null) {
   return (s ?? '').toLowerCase().replace(/[\s-]+/g, ' ').trim()
-}
-
-type NecklineHint = 'v' | 'crew' | 'off_shoulder' | 'turtleneck' | 'strapless' | 'square' | 'sweetheart' | 'halter' | 'unknown'
-
-function inferNecklineHint(top?: WardrobeItem): NecklineHint {
-  if (!top) return 'unknown'
-  const name = normalizeName(top.name)
-
-  if (name.includes('v neck') || name.includes('v-neck') || name.includes('vneck') || name.includes('v line') || name.includes('v-line')) return 'v'
-  if (name.includes('off shoulder') || name.includes('off-shoulder')) return 'off_shoulder'
-  if (name.includes('turtleneck') || name.includes('high neck') || name.includes('high-neck')) return 'turtleneck'
-  if (name.includes('strapless') || name.includes('tube top')) return 'strapless'
-  if (name.includes('square neck') || name.includes('square-neck')) return 'square'
-  if (name.includes('sweetheart')) return 'sweetheart'
-  if (name.includes('halter')) return 'halter'
-  if (name.includes('crew neck') || name.includes('crew-neck') || name.includes('round neck') || name.includes('round-neck')) return 'crew'
-
-  // Category-based defaults (best-effort, since we don't store neckline explicitly).
-  if (top.category === 't_shirt' || top.category === 'long_sleeve' || top.category === 'sweater') return 'crew'
-  return 'unknown'
-}
-
-function hairstyleSuggestionFromNeckline(hint: NecklineHint): string {
-  switch (hint) {
-    case 'v':
-      return 'V-line / V-neck: try a sleek ponytail or soft waves to frame the neckline.'
-    case 'crew':
-      return 'Crew/round neck: a high ponytail or bun opens up the face and keeps it clean.'
-    case 'off_shoulder':
-      return 'Off-shoulder: wear hair down (soft waves) or a side-swept style to highlight the collarbone.'
-    case 'turtleneck':
-      return 'Turtleneck/high neck: a slick bun or high ponytail keeps the neckline sharp.'
-    case 'strapless':
-      return 'Strapless: an updo (bun/chignon) or half-up style adds elegance and lengthens the neck.'
-    case 'square':
-      return 'Square neck: a low bun or half-up waves balances the structured neckline.'
-    case 'sweetheart':
-      return 'Sweetheart: soft waves or a half-up style complements the curve of the neckline.'
-    case 'halter':
-      return 'Halter: a high ponytail or bun shows the shoulders and keeps the back clean.'
-    default:
-      return 'Hair tip: a clean pony/bun is a safe match for most necklines.'
-  }
 }
 
 type BottomFitHint = 'skinny' | 'straight' | 'wide_leg' | 'flare' | 'bootcut' | 'leggings' | 'jogger' | 'skirt' | 'trousers' | 'unknown'
@@ -373,12 +328,10 @@ export function buildOutfitImprovements(
   })()
 
   const overall_explanation = `${occasion} · ${weather.tempBand} weather — balanced palette & layering ideas below.`
-  const hairSuggestion = hairstyleSuggestionFromNeckline(inferNecklineHint(outfit.top))
   const shoeTheorySuggestion = shoeTheorySuggestionFromBottomFit(inferBottomFitHint(outfit.bottom))
 
   return {
     overall_explanation,
-    hairSuggestion,
     shoeTheorySuggestion,
     missing_items: missingItemsUnique,
     directions,

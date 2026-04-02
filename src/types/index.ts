@@ -61,6 +61,16 @@ export type WardrobeCategory =
   | FootwearCategory
   | AccessoryCategory
 
+/** Neckline keys for Hair Advisor (sidebar + mapping). */
+export type HairNecklineKey =
+  | 'crew_round'
+  | 'off_shoulder'
+  | 'turtleneck'
+  | 'strapless'
+  | 'square_neck'
+  | 'halter_keyhole'
+  | 'v_neck_deep'
+
 export type CategoryGroup = 'tops' | 'bottoms' | 'outerwear' | 'footwear' | 'accessories'
 
 export const CATEGORY_TO_GROUP: Record<WardrobeCategory, CategoryGroup> = {
@@ -107,6 +117,10 @@ export interface WardrobeItem {
   id: string
   name: string
   imageUrl: string
+  /**
+   * Detected neckline for Hair Advisor when this top appears in a generated outfit.
+   */
+  necklineType?: HairNecklineKey
   /**
    * Extracted dominant colour in hex form (e.g. "#A34B2C") from the uploaded image.
    * Used for outfit colour harmony scoring.

@@ -1,0 +1,580 @@
+/* Retro Mac OS Hair Advisor — VT323 + pixelated chrome */
+
+.hair-advisor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
+  background: rgba(0, 0, 0, 0.45);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hair-advisor-root {
+  font-family: 'VT323', monospace;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  width: min(100%, 42rem);
+  max-width: 100%;
+  max-height: none;
+  min-height: 0;
+  margin-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+}
+
+.hair-advisor-outer {
+  background-color: #c0c0c0;
+  background-image: radial-gradient(#999 1px, transparent 1px);
+  background-size: 4px 4px;
+  padding: 10px;
+}
+
+.hair-advisor-window {
+  background: #fff;
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0 #000;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  max-height: min(92dvh, 900px);
+}
+
+.hair-advisor-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f4e29a;
+  color: #000;
+  padding: 6px 8px;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+  border-bottom: 2px solid #000;
+}
+
+.hair-advisor-titlebar__controls {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.hair-advisor-titlebar__title {
+  flex: 1;
+  text-align: center;
+  padding: 0 4px;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.hair-advisor-winbtn {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #000;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.hair-advisor-winbtn:hover {
+  background: #eee;
+}
+
+.hair-advisor-menubar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 8px;
+  border-bottom: 2px solid #000;
+  background: #f9edb8;
+  font-size: clamp(13px, 2.8vw, 15px);
+  color: #000;
+  flex-shrink: 0;
+}
+
+.hair-advisor-menubar__sep {
+  color: #666;
+}
+
+.hair-advisor-body {
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.hair-advisor-sidebar {
+  width: min(148px, 34vw);
+  flex-shrink: 0;
+  border-right: 2px solid #000;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hair-advisor-length-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hair-advisor-length-row button {
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+  text-align: center;
+  padding: 6px 6px;
+  background: #fff;
+  color: #000;
+  border: 2px solid #000;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #aaa;
+}
+
+.hair-advisor-length-row button:hover {
+  background: #f0f0f0;
+}
+
+.hair-advisor-length-row button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #aaa;
+}
+
+.hair-advisor-length-row button.is-active {
+  background: #000;
+  color: #fff;
+}
+
+.hair-advisor-sidebar__label {
+  font-size: 12px;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
+.hair-advisor-sidebar button {
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  text-align: left;
+  padding: 6px 8px;
+  background: #fff;
+  color: #000;
+  border: 2px solid #000;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #aaa;
+}
+
+.hair-advisor-sidebar button:hover {
+  background: #f0f0f0;
+}
+
+.hair-advisor-sidebar button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #aaa;
+}
+
+.hair-advisor-sidebar button.is-active {
+  background: #000;
+  color: #fff;
+}
+
+.hair-advisor-neckline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hair-advisor-main {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #fff;
+}
+
+.hair-advisor-texture-section {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #ccc;
+}
+
+.hair-advisor-texture-hint {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.hair-advisor-texture-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.hair-advisor-texture-pill {
+  font-family: 'VT323', monospace;
+  font-size: 15px;
+  padding: 5px 4px;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #aaa;
+  min-width: 0;
+}
+
+.hair-advisor-texture-pill:hover {
+  background: #f5f5f5;
+}
+
+.hair-advisor-texture-pill:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #aaa;
+}
+
+.hair-advisor-texture-pill.is-active {
+  background: #000;
+  color: #fff;
+}
+
+.hair-advisor-guide-hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: start;
+}
+
+.hair-advisor-guide-hero__main {
+  min-width: 0;
+}
+
+.hair-advisor-guide-hero__texture {
+  min-width: 0;
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.hair-advisor-hero-badge {
+  display: inline-block;
+  font-size: 12px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+  padding: 3px 8px;
+  margin-bottom: 6px;
+}
+
+.hair-advisor-hero-title {
+  font-size: clamp(17px, 4vw, 20px);
+  margin-top: 6px;
+  margin-bottom: 6px;
+  font-weight: 400;
+}
+
+.hair-advisor-hero-blurb {
+  font-size: 15px;
+  line-height: 1.35;
+  color: #222;
+  margin: 0 0 6px;
+}
+
+.hair-advisor-hero-meta {
+  font-size: 13px;
+  color: #555;
+  margin: 0;
+}
+
+.hair-advisor-texture-id {
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+.hair-advisor-portrait--texture-thumb {
+  max-width: 160px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hair-advisor-detected {
+  font-size: 17px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #000;
+}
+
+.hair-advisor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 520px) {
+  .hair-advisor-guide-hero {
+    grid-template-columns: 1fr minmax(100px, 180px);
+    gap: 14px;
+  }
+
+  .hair-advisor-guide-hero__texture {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .hair-advisor-body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .hair-advisor-sidebar {
+    width: 100%;
+    max-height: none;
+    border-right: none;
+    border-bottom: 2px solid #000;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    align-content: flex-start;
+    gap: 8px;
+  }
+
+  .hair-advisor-sidebar > .hair-advisor-sidebar__label {
+    width: 100%;
+    flex-basis: 100%;
+    margin-bottom: 0;
+  }
+
+  .hair-advisor-length-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .hair-advisor-length-row button {
+    flex: 1;
+    min-width: 5rem;
+  }
+
+  .hair-advisor-neckline-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .hair-advisor-neckline-list button {
+    flex: 1 1 calc(50% - 4px);
+    min-width: min(100%, 9rem);
+    text-align: center;
+  }
+
+  .hair-advisor-window {
+    max-height: none;
+  }
+
+  .hair-advisor-texture-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .hair-advisor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 380px) {
+  .hair-advisor-texture-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .hair-advisor-texture-pill {
+    font-size: 14px;
+    padding: 4px 2px;
+  }
+}
+
+.hair-advisor-card {
+  border: 2px solid #000;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #fff;
+  color: #000;
+  box-shadow: 3px 3px 0 #aaa;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.hair-advisor-card--toppick {
+  background: #000;
+  color: #fff;
+  position: relative;
+}
+
+.hair-advisor-card__badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 11px;
+  background: #fff;
+  color: #000;
+  border: 1px solid #000;
+  padding: 2px 4px;
+  line-height: 1;
+}
+
+.hair-advisor-portrait {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  margin: 4px 0 6px;
+  border: 2px solid #000;
+  flex-shrink: 0;
+  image-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  contain: layout style paint;
+}
+
+.hair-advisor-portrait--light-border {
+  border-color: #fff;
+  box-shadow: 0 0 0 1px #000;
+}
+
+.hair-advisor-portrait__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  image-rendering: auto;
+}
+
+.hair-advisor-card__name {
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+.hair-advisor-card__reason {
+  font-size: 14px;
+  line-height: 1.25;
+  opacity: 0.92;
+}
+
+.hair-advisor-avoid {
+  border: 1.5px dashed #aaa;
+  padding: 8px 10px;
+  font-size: 15px;
+  background: #fafafa;
+}
+
+.hair-advisor-avoid strong {
+  font-weight: 400;
+  text-decoration: underline;
+}
+
+.hair-advisor-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-top: 2px solid #000;
+  background: #e9cf7a;
+  flex-shrink: 0;
+}
+
+.hair-advisor-status {
+  font-size: 13px;
+  color: #000;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.25;
+}
+
+.hair-advisor-status__line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hair-advisor-status__meta {
+  font-size: 12px;
+  color: #333;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.hair-advisor-footer__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hair-advisor-retrobtn {
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  padding: 6px 14px;
+  background: #fff;
+  color: #000;
+  border: 2px solid #000;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #aaa;
+}
+
+.hair-advisor-retrobtn:hover {
+  background: #f5f5f5;
+}
+
+.hair-advisor-retrobtn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #aaa;
+}
+
+.hair-advisor-trigger {
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  margin-top: 0.5rem;
+  padding: 8px 14px;
+  background: #f4e29a;
+  color: #000;
+  border: 2px solid #000;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #aaa;
+}
+
+.hair-advisor-trigger:hover {
+  background: #ecd67a;
+}
+
+.hair-advisor-trigger:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #aaa;
+}

@@ -146,7 +146,8 @@ textarea {
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center center;
-  background-attachment: scroll;
+  /* Viewport-relative paint area so `cover` does not rescale when page content grows (e.g. suggested outfits). */
+  background-attachment: fixed;
   min-height: 100vh;
   min-height: 100dvh;
   color: var(--cream);
@@ -1389,6 +1390,39 @@ textarea {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Save look to Capsule — brown retro, white text (readable on light outfit cards on Home) */
+.btn.outfit-card-save-capsule {
+  margin-top: 0.5rem;
+  background: var(--brown-dark);
+  color: var(--white);
+  border: 2px solid var(--brown-deeper);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 rgba(26, 5, 0, 0.28);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: none;
+}
+
+.btn.outfit-card-save-capsule:hover:not(:disabled) {
+  background: var(--brown-mid);
+  color: var(--white);
+}
+
+.btn.outfit-card-save-capsule:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 rgba(26, 5, 0, 0.28);
+}
+
+.btn.outfit-card-save-capsule:disabled {
+  background: var(--brown-mid);
+  color: var(--cream);
+  opacity: 0.92;
+  cursor: default;
+  box-shadow: 2px 2px 0 rgba(26, 5, 0, 0.15);
 }
 
 .btn-block {

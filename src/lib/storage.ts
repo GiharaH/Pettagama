@@ -26,6 +26,7 @@ const KEYS = {
   WISHLIST: 'pettagama_wishlist',
   SUGGESTED_OUTFITS: 'pettagama_suggested_outfits',
   RECENT_OUTFIT_SIGNATURES: 'pettagama_recent_outfit_signatures',
+  HAIR_STYLE_NOTES: 'pettagama_hair_style_notes',
 } as const
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
@@ -362,6 +363,36 @@ export function getWishlist(): WishlistItem[] {
 
 export function saveWishlist(items: WishlistItem[]): void {
   localStorage.setItem(KEYS.WISHLIST, JSON.stringify(items))
+}
+
+export interface HairStyleNote {
+  id: string
+  text: string
+  savedAt: string
+}
+
+export function getHairStyleNotes(): HairStyleNote[] {
+  try {
+    const raw = localStorage.getItem(KEYS.HAIR_STYLE_NOTES)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as unknown
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((x) => x && typeof (x as HairStyleNote).text === 'string') as HairStyleNote[]
+  } catch {
+    return []
+  }
+}
+
+export function appendHairStyleNote(text: string): void {
+  const trimmed = text.trim()
+  if (!trimmed) return
+  const list = getHairStyleNotes()
+  list.push({
+    id: `hair-note-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    text: trimmed,
+    savedAt: new Date().toISOString(),
+  })
+  localStorage.setItem(KEYS.HAIR_STYLE_NOTES, JSON.stringify(list))
 }
 
 export function addWishlistFromAction(action: ImprovementAction): boolean {

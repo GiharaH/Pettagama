@@ -148,10 +148,8 @@ export function Home() {
 
   const displayName = userDetails.name?.trim() || null
 
-  const showSuggestedWallpaper = savedEntries.length > 0 || suggesting
-
   return (
-    <div className={`page page--home${showSuggestedWallpaper ? ' page--home-suggested' : ''}`}>
+    <div className="page page--home">
       <BrandHeader
         eyebrow={displayName ? `Welcome back, ${displayName}` : 'Home'}
         title="What's the occasion today?"

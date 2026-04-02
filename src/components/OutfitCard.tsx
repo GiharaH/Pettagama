@@ -6,6 +6,8 @@ import { getEnhanceVisualsFromImprovements } from '@/lib/improvementVisuals'
 import { OutfitEnhanceDummy } from '@/components/OutfitEnhanceDummy'
 import { ImprovementActionCard, effectiveWishlistKey } from '@/components/ImprovementActionCard'
 import { GarmentCutoutImage } from '@/components/GarmentCutoutImage'
+import { HairAdvisorPopup, HairAdvisorTriggerButton } from '@/components/HairAdvisorPopup'
+import { inferNecklineTypeForTop } from '@/lib/necklineInference'
 import { addWishlistFromAction, getWishlist } from '@/lib/storage'
 import '@/styles/theme.css'
 
@@ -68,6 +70,7 @@ export function OutfitCard({
   const enhanceVisuals = improvements ? getEnhanceVisualsFromImprovements(improvements) : null
 
   const [wishlistIds, setWishlistIds] = useState(() => new Set(getWishlist().map((i) => i.id)))
+  const [hairAdvisorOpen, setHairAdvisorOpen] = useState(false)
 
   const handleWishlist = (action: ImprovementAction) => {
     if (addWishlistFromAction(action)) {
@@ -142,11 +145,21 @@ export function OutfitCard({
           + {outfit.accessories.length} accessory{outfit.accessories.length > 1 ? 'ies' : ''}
         </div>
       )}
+      {outfit.top && (
+        <>
+          <HairAdvisorTriggerButton onClick={() => setHairAdvisorOpen(true)} />
+          <HairAdvisorPopup
+            open={hairAdvisorOpen}
+            onClose={() => setHairAdvisorOpen(false)}
+            outfit={outfit}
+            initialNecklineKey={outfit.top.necklineType ?? inferNecklineTypeForTop(outfit.top)}
+          />
+        </>
+      )}
       {onSave && (
         <button
           type="button"
-          className="btn btn-ghost"
-          style={{ marginTop: '0.5rem' }}
+          className="btn btn-block outfit-card-save-capsule"
           onClick={onSave}
           disabled={savedToFavourites}
         >
@@ -160,20 +173,12 @@ export function OutfitCard({
             Improve this outfit
           </div>
 
-          {(improvements.hairSuggestion || improvements.shoeTheorySuggestion) && (
+          {improvements.shoeTheorySuggestion && (
             <div style={{ fontSize: '0.82rem', color: 'var(--brown-mid)', marginBottom: '0.6rem', lineHeight: 1.35 }}>
-              {improvements.hairSuggestion && (
-                <div>
-                  <strong style={{ color: 'var(--brown-dark)', fontWeight: 600 }}>Hair</strong>{' '}
-                  <span>{improvements.hairSuggestion}</span>
-                </div>
-              )}
-              {improvements.shoeTheorySuggestion && (
-                <div style={{ marginTop: improvements.hairSuggestion ? '0.25rem' : 0 }}>
-                  <strong style={{ color: 'var(--brown-dark)', fontWeight: 600 }}>Shoes</strong>{' '}
-                  <span>{improvements.shoeTheorySuggestion}</span>
-                </div>
-              )}
+              <div>
+                <strong style={{ color: 'var(--brown-dark)', fontWeight: 600 }}>Shoes</strong>{' '}
+                <span>{improvements.shoeTheorySuggestion}</span>
+              </div>
             </div>
           )}
 
