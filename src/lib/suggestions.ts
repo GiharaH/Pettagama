@@ -1,4 +1,5 @@
 import type { WardrobeItem, Outfit, Occasion, WeatherState } from '@/types'
+import { CATEGORY_TO_GROUP } from '@/types'
 import { outfitSignature } from '@/lib/outfitSignature'
 import { generateOutfits as engineGenerateOutfits } from '@/lib/pettagama_outfit_engine'
 import { inferNecklineTypeForTop } from '@/lib/necklineInference'
@@ -42,6 +43,47 @@ function mapEngineOutfitToApp(
 
 type AnyItem = WardrobeItem & { slot?: string; id?: string; category?: string }
 
+function wardrobeHasFootwear(wardrobe: WardrobeItem[]) {
+  return wardrobe.some((i) => CATEGORY_TO_GROUP[i.category] === 'footwear')
+}
+
+function wardrobeHasAccessory(wardrobe: WardrobeItem[]) {
+  return wardrobe.some((i) => CATEGORY_TO_GROUP[i.category] === 'accessories')
+}
+
+/** Ensure shoe + at least one accessory when the closet has them (engine may rarely omit). */
+function fillMissingOutfitPieces(wardrobe: WardrobeItem[], outfit: Outfit): Outfit {
+  const used = new Set<string>()
+  const mark = (item?: WardrobeItem | null) => {
+    if (item?.id) used.add(item.id)
+  }
+  mark(outfit.top)
+  mark(outfit.bottom)
+  mark(outfit.outerwear)
+  mark(outfit.footwear)
+  outfit.accessories.forEach(mark)
+
+  let footwear = outfit.footwear
+  if (!footwear && wardrobeHasFootwear(wardrobe)) {
+    const pool = wardrobe.filter((i) => CATEGORY_TO_GROUP[i.category] === 'footwear' && !used.has(i.id))
+    if (pool.length) {
+      footwear = pool[Math.floor(Math.random() * pool.length)]!
+      used.add(footwear.id)
+    }
+  }
+
+  let accessories = [...outfit.accessories]
+  if (accessories.length === 0 && wardrobeHasAccessory(wardrobe)) {
+    const pool = wardrobe.filter((i) => CATEGORY_TO_GROUP[i.category] === 'accessories' && !used.has(i.id))
+    if (pool.length) {
+      const pick = pool[Math.floor(Math.random() * pool.length)]!
+      accessories = [pick]
+    }
+  }
+
+  return { ...outfit, footwear, accessories }
+}
+
 export function suggestOutfits(
   wardrobe: WardrobeItem[],
   weather: WeatherState,
@@ -57,10 +99,12 @@ export function suggestOutfits(
   const engineOutfits = engineGenerateOutfits(wardrobe as unknown as AnyItem[], weather as unknown as AnyItem, occasion, maxToGenerate)
 
   for (const engineOutfit of engineOutfits) {
-    const appOutfit = mapEngineOutfitToApp(engineOutfit as any, occasion)
+    let appOutfit = mapEngineOutfitToApp(engineOutfit as any, occasion)
+    appOutfit = fillMissingOutfitPieces(wardrobe, appOutfit)
 
-    // Skip incomplete (engine should normally include both top+bottom)
     if (!appOutfit.top || !appOutfit.bottom) continue
+    if (wardrobeHasFootwear(wardrobe) && !appOutfit.footwear) continue
+    if (wardrobeHasAccessory(wardrobe) && appOutfit.accessories.length === 0) continue
 
     const sig = outfitSignature(appOutfit)
     if (exclude.has(sig)) continue

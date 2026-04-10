@@ -21,7 +21,6 @@ import {
 } from '@/lib/storage'
 import { outfitSignature } from '@/lib/outfitSignature'
 import { BrandHeader } from '@/components/BrandHeader'
-import { buildOutfitImprovements } from '@/lib/outfitImprovements'
 import '@/styles/theme.css'
 
 export function Home() {
@@ -119,7 +118,6 @@ export function Home() {
         outfit: o,
         occasion,
         weather: weatherToUse,
-        improvements: buildOutfitImprovements(wardrobe, o, weatherToUse, occasion),
         addedAt,
       }))
       saveSuggestedOutfits([...prev, ...newEntries])
@@ -249,7 +247,6 @@ export function Home() {
               <div key={entry.outfit.id}>
                 <OutfitCard
                   outfit={entry.outfit}
-                  improvements={entry.improvements}
                   onSave={() => handleSaveFavourite(entry.outfit, entry.occasion)}
                   savedToFavourites={favSigs.has(outfitSignature(entry.outfit))}
                 />

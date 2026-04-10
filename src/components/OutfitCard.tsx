@@ -1,14 +1,9 @@
 import { useState } from 'react'
 import type { Outfit, WardrobeItem } from '@/types'
 import { CATEGORY_LABELS } from '@/lib/constants'
-import type { ImprovementAction, OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
-import { getEnhanceVisualsFromImprovements } from '@/lib/improvementVisuals'
-import { OutfitEnhanceDummy } from '@/components/OutfitEnhanceDummy'
-import { ImprovementActionCard, effectiveWishlistKey } from '@/components/ImprovementActionCard'
 import { GarmentCutoutImage } from '@/components/GarmentCutoutImage'
 import { HairAdvisorPopup, HairAdvisorTriggerButton } from '@/components/HairAdvisorPopup'
 import { inferNecklineTypeForTop } from '@/lib/necklineInference'
-import { addWishlistFromAction, getWishlist } from '@/lib/storage'
 import '@/styles/theme.css'
 
 interface OutfitCardProps {
@@ -17,7 +12,6 @@ interface OutfitCardProps {
   /** When true, the save action is shown as already completed. */
   savedToFavourites?: boolean
   saveButtonLabel?: string
-  improvements?: OutfitImprovementSuggestion
 }
 
 function splitAccessoriesForPreview(outfit: Outfit): { bag?: WardrobeItem; jewellery?: WardrobeItem } {
@@ -35,7 +29,6 @@ function splitAccessoriesForPreview(outfit: Outfit): { bag?: WardrobeItem; jewel
     }
   }
 
-  // If we have no jewellery yet, fall back to a second accessory (still keeps preview simple).
   if (!jewellery) {
     for (const a of outfit.accessories) {
       if (a !== bag && !jewellery) {
@@ -53,7 +46,6 @@ export function OutfitCard({
   onSave,
   savedToFavourites,
   saveButtonLabel = 'Save look to Capsule',
-  improvements,
 }: OutfitCardProps) {
   const { bag, jewellery } = splitAccessoriesForPreview(outfit)
 
@@ -67,28 +59,17 @@ export function OutfitCard({
   const pillLabels = [topLabel, layerLabel, bottomLabel, shoeLabel, bagLabel, jewelleryLabel].filter(Boolean) as string[]
   const hasLayerRow = Boolean(outfit.outerwear || bag || jewellery)
 
-  const enhanceVisuals = improvements ? getEnhanceVisualsFromImprovements(improvements) : null
-
-  const [wishlistIds, setWishlistIds] = useState(() => new Set(getWishlist().map((i) => i.id)))
   const [hairAdvisorOpen, setHairAdvisorOpen] = useState(false)
-
-  const handleWishlist = (action: ImprovementAction) => {
-    if (addWishlistFromAction(action)) {
-      setWishlistIds(new Set(getWishlist().map((i) => i.id)))
-    }
-  }
 
   return (
     <div className="card card-accent-brown">
       <div className="suggested-outfit-stack" aria-label="Suggested outfit preview">
-        {/* Vertical main stack */}
         {outfit.top && (
           <div className="suggested-outfit-oval suggested-outfit-oval--main">
             <GarmentCutoutImage src={outfit.top.imageUrl} alt={outfit.top.name} className="suggested-outfit-oval__img" />
           </div>
         )}
 
-        {/* Accessories/jewellery can sit horizontally alongside the layer */}
         {outfit.top && hasLayerRow && <div className="suggested-outfit-connector-v" aria-hidden />}
         {hasLayerRow && (
           <div className="suggested-outfit-horizontal-row" aria-hidden>
@@ -165,54 +146,6 @@ export function OutfitCard({
         >
           {savedToFavourites ? 'Saved to Capsule' : saveButtonLabel}
         </button>
-      )}
-
-      {improvements && (
-        <div style={{ marginTop: '0.75rem' }}>
-          <div style={{ fontFamily: 'var(--font-serif)', color: 'var(--brown-dark)', fontWeight: 700, marginBottom: '0.5rem' }}>
-            Improve this outfit
-          </div>
-
-          {improvements.shoeTheorySuggestion && (
-            <div style={{ fontSize: '0.82rem', color: 'var(--brown-mid)', marginBottom: '0.6rem', lineHeight: 1.35 }}>
-              <div>
-                <strong style={{ color: 'var(--brown-dark)', fontWeight: 600 }}>Shoes</strong>{' '}
-                <span>{improvements.shoeTheorySuggestion}</span>
-              </div>
-            </div>
-          )}
-
-          {enhanceVisuals && (
-            <OutfitEnhanceDummy
-              outfit={outfit}
-              addImageUrls={enhanceVisuals.addImages}
-              swatchColors={enhanceVisuals.swatches}
-            />
-          )}
-
-          {improvements.overall_explanation.trim().length > 0 && (
-            <p className="improve-one-liner">{improvements.overall_explanation.trim()}</p>
-          )}
-
-          <div className="improve-directions">
-            {improvements.directions.map((d) => (
-              <div key={d.title} className="improve-direction-block">
-                <div className="improve-direction-title">{d.title}</div>
-                <div className="improve-actions-scroll" role="list">
-                  {d.actions.map((a) => (
-                    <div key={effectiveWishlistKey(a)} role="listitem">
-                      <ImprovementActionCard
-                        action={a}
-                        inWishlist={wishlistIds.has(effectiveWishlistKey(a))}
-                        onAddWishlist={() => handleWishlist(a)}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       )}
     </div>
   )

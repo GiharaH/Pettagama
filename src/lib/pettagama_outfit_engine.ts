@@ -7,9 +7,7 @@
 //   not raw OpenWeatherMap JSON.
 // - Pettagama wardrobe categories use `snake_case` names like `t_shirt`,
 //   so weather rule category lists are aligned accordingly.
-// - UI suggestion generation only needs `generateOutfits`; improvement
-//   suggestions are exported as `getOutfitImprovements` but are not wired
-//   into the UI here.
+// - UI suggestion generation uses `generateOutfits` from the suggestions layer.
 // ================================================================
 
 import { CATEGORY_TO_GROUP, type WardrobeCategory } from '@/types'
@@ -282,8 +280,14 @@ export function scoreOccasionFit(item: AnyRecord, targetOccasion: string) {
 
 const MANDATORY_SLOTS = ['top', 'bottom'] as const
 
-function pickBestItemPerSlot(items: AnyRecord[], slot: string, occasion: string) {
+function pickBestItemPerSlot(
+  items: AnyRecord[],
+  slot: string,
+  occasion: string,
+  excludeIds: ReadonlySet<string> = new Set()
+) {
   const candidates = items.filter((i) => {
+    if (excludeIds.has(String(i.id ?? ''))) return false
     const cat = normalizeCategory(i.category)
     if (!cat) return false
     const g = categoryGroup(cat)
@@ -308,6 +312,23 @@ function pickBestItemPerSlot(items: AnyRecord[], slot: string, occasion: string)
   return topN[Math.floor(Math.random() * topN.length)].item
 }
 
+/** One of bag / jewellery / belt_scarf — whichever scores best for the occasion. */
+function pickBestAccessory(wardrobe: AnyRecord[], occasion: string, excludeIds: ReadonlySet<string>) {
+  const slots = ['bag', 'jewellery', 'accessory'] as const
+  let best: { item: AnyRecord; score: number; slot: string } | null = null
+  for (const slot of slots) {
+    const item = pickBestItemPerSlot(wardrobe, slot, occasion, excludeIds)
+    if (!item) continue
+    const score = scoreOccasionFit(item, occasion)
+    if (!best || score > best.score) best = { item, score, slot }
+  }
+  return best
+}
+
+function outfitHasAccessorySlot(items: AnyRecord[]) {
+  return items.some((i) => ['bag', 'jewellery', 'accessory'].includes(String(i.slot)))
+}
+
 function shouldAddOuterwear(weather: ReturnType<typeof buildWeatherProfile>) {
   if (!weather) return false
   return ['COLD', 'COOL'].includes(weather.tempBand) || weather.isWindy
@@ -320,28 +341,30 @@ function shouldExcludeOuterwear(weather: ReturnType<typeof buildWeatherProfile>)
 
 function assembleOutfitCandidate(wardrobe: AnyRecord[], occasion: string, weather: ReturnType<typeof buildWeatherProfile>) {
   const outfit: { items: AnyRecord[] } = { items: [] }
+  const usedIds = new Set<string>()
+
+  const pushItem = (item: AnyRecord, slot: string) => {
+    const id = String(item.id ?? '')
+    if (id) usedIds.add(id)
+    outfit.items.push({ ...item, slot })
+  }
 
   for (const slot of MANDATORY_SLOTS) {
-    const item = pickBestItemPerSlot(wardrobe, slot, occasion)
-    if (item) outfit.items.push({ ...item, slot })
+    const item = pickBestItemPerSlot(wardrobe, slot, occasion, usedIds)
+    if (item) pushItem(item, slot)
   }
 
-  const shoe = pickBestItemPerSlot(wardrobe, 'footwear', occasion)
-  if (shoe) outfit.items.push({ ...shoe, slot: 'footwear' })
+  const shoe = pickBestItemPerSlot(wardrobe, 'footwear', occasion, usedIds)
+  if (shoe) pushItem(shoe, 'footwear')
 
   if (shouldAddOuterwear(weather) && !shouldExcludeOuterwear(weather)) {
-    const layer = pickBestItemPerSlot(wardrobe, 'outerwear', occasion)
-    if (layer) outfit.items.push({ ...layer, slot: 'outerwear' })
+    const layer = pickBestItemPerSlot(wardrobe, 'outerwear', occasion, usedIds)
+    if (layer) pushItem(layer, 'outerwear')
   }
 
-  if (occasion !== 'active') {
-    const bag = pickBestItemPerSlot(wardrobe, 'bag', occasion)
-    if (bag) outfit.items.push({ ...bag, slot: 'bag' })
-  }
-
-  if (['party', 'traditional', 'wedding', 'office'].includes(String(occasion).toLowerCase())) {
-    const jewel = pickBestItemPerSlot(wardrobe, 'jewellery', occasion)
-    if (jewel) outfit.items.push({ ...jewel, slot: 'jewellery' })
+  if (!outfitHasAccessorySlot(outfit.items)) {
+    const acc = pickBestAccessory(wardrobe, occasion, usedIds)
+    if (acc) pushItem(acc.item, acc.slot)
   }
 
   return outfit
@@ -445,11 +468,24 @@ export function generateOutfits(userWardrobe: AnyRecord[], weatherData: AnyRecor
     return primary.sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, count)
   }
 
-  // Last resort: one deterministic top + bottom if the wardrobe has both groups but random assembly failed.
+  // Last resort: top + bottom + shoe + accessory when the wardrobe has them.
   const top = firstItemInGroup(userWardrobe, 'tops')
   const bottom = firstItemInGroup(userWardrobe, 'bottoms')
   if (top && bottom) {
-    const outfit = { items: [{ ...top, slot: 'top' }, { ...bottom, slot: 'bottom' }] }
+    const usedIds = new Set<string>([String(top.id ?? ''), String(bottom.id ?? '')].filter(Boolean))
+    const items: AnyRecord[] = [
+      { ...top, slot: 'top' },
+      { ...bottom, slot: 'bottom' },
+    ]
+    const shoe = pickBestItemPerSlot(userWardrobe, 'footwear', occasion, usedIds)
+    if (shoe) {
+      usedIds.add(String(shoe.id ?? ''))
+      items.push({ ...shoe, slot: 'footwear' })
+    }
+    const acc = pickBestAccessory(userWardrobe, occasion, usedIds)
+    if (acc) items.push({ ...acc.item, slot: acc.slot })
+
+    const outfit = { items }
     const scoreResult = scoreOutfit(outfit, occasion)
     return [
       {

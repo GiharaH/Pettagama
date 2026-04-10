@@ -21,7 +21,7 @@ export function Wishlist() {
       {items.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
           <p style={{ marginBottom: '1rem', color: 'var(--brown-dark)' }}>
-            Your wishlist is empty. Generate outfits on the Home page to see “Improve this outfit” suggestions you can act on.
+            Your wishlist is empty. Add items here when you save shopping ideas from the app.
           </p>
         </div>
       ) : (

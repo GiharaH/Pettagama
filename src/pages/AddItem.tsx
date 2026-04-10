@@ -19,6 +19,8 @@ export function AddItem() {
   const [step, setStep] = useState<'upload' | 'details'>('upload')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [dominantColour, setDominantColour] = useState<string | null>(null)
+  /** Set as soon as the catalog image is written to localStorage; details edits update the same row. */
+  const [draftItemId, setDraftItemId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [category, setCategory] = useState<WardrobeCategory>(ALL_CATEGORIES[0])
   const [colourGroup, setColourGroup] = useState<ColourGroup>('neutral')
@@ -30,9 +32,28 @@ export function AddItem() {
   const pendingFileRef = useRef<File | null>(null)
 
   const applyWardrobeFile = useCallback(async (file: File) => {
-    const { catalogUrl, dominantColour } = await processWardrobeUpload(file)
+    const { catalogUrl, dominantColour: dom } = await processWardrobeUpload(file)
+    const id = generateId()
+    const wardrobe = getWardrobe()
+    const item: WardrobeItem = {
+      id,
+      name: 'Untitled',
+      imageUrl: catalogUrl,
+      ...(dom ? { dominantColour: dom } : {}),
+      category: ALL_CATEGORIES[0],
+      colourGroup: 'neutral',
+      season: 'all_season',
+      occasionTags: [],
+      createdAt: new Date().toISOString(),
+    }
+    saveWardrobe([...wardrobe, item])
+    setDraftItemId(id)
     setPreviewUrl(catalogUrl)
-    setDominantColour(dominantColour)
+    setDominantColour(dom ?? null)
+    setName('')
+    setCategory(ALL_CATEGORIES[0])
+    setColourGroup('neutral')
+    setSeason('all_season')
     setStep('details')
   }, [])
 
@@ -70,48 +91,67 @@ export function AddItem() {
   }
 
   useEffect(() => {
-    if (!previewUrl || step !== 'details') return
+    if (!previewUrl || step !== 'details' || !draftItemId) return
     setSuggestingCategory(true)
     suggestCategoryForImage(previewUrl)
       .then((suggested) => {
-        if (suggested) setCategory(suggested)
+        if (!suggested) return
+        setCategory(suggested)
+        const w = getWardrobe()
+        const next = w.map((i) => (i.id === draftItemId ? { ...i, category: suggested } : i))
+        saveWardrobe(next)
       })
       .finally(() => setSuggestingCategory(false))
-  }, [previewUrl, step])
+  }, [previewUrl, step, draftItemId])
 
   const handleSuggestCategory = () => {
-    if (!previewUrl) return
+    if (!previewUrl || !draftItemId) return
     setSuggestingCategory(true)
     suggestCategoryForImage(previewUrl)
       .then((suggested) => {
-        if (suggested) setCategory(suggested)
+        if (!suggested) return
+        setCategory(suggested)
+        const w = getWardrobe()
+        saveWardrobe(w.map((i) => (i.id === draftItemId ? { ...i, category: suggested } : i)))
       })
       .finally(() => setSuggestingCategory(false))
   }
 
-  const handleSave = () => {
-    if (!previewUrl) return
-    setSaving(true)
+  const syncDraftToWardrobe = useCallback(() => {
+    if (!draftItemId || !previewUrl) return
     const wardrobe = getWardrobe()
-    const item: WardrobeItem = {
-      id: generateId(),
+    const base = wardrobe.find((i) => i.id === draftItemId)
+    if (!base) return
+    const updated: WardrobeItem = {
+      ...base,
       name: name.trim() || 'Untitled',
       imageUrl: previewUrl,
       ...(dominantColour ? { dominantColour } : {}),
       category,
       colourGroup,
       season,
-      occasionTags: [],
-      createdAt: new Date().toISOString(),
     }
-    saveWardrobe([...wardrobe, item])
-    setSaving(false)
-    navigate('/wardrobe')
+    saveWardrobe(wardrobe.map((i) => (i.id === draftItemId ? updated : i)))
+  }, [draftItemId, previewUrl, name, dominantColour, category, colourGroup, season])
+
+  const handleSave = () => {
+    if (!previewUrl || !draftItemId) return
+    setSaving(true)
+    try {
+      syncDraftToWardrobe()
+      setDraftItemId(null)
+      navigate('/wardrobe')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleBack = () => {
     if (step === 'details') {
+      syncDraftToWardrobe()
       setPreviewUrl(null)
+      setDraftItemId(null)
+      setDominantColour(null)
       setStep('upload')
     } else {
       navigate('/wardrobe')
@@ -130,8 +170,9 @@ export function AddItem() {
       {step === 'upload' && (
         <>
           <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem' }}>
-            Photograph or upload a clear shot of the item. We remove the background, place it on a consistent baby-blue
-            catalog surface, and—when an API key is configured—use AI to polish the look for your wardrobe.
+            Photograph or upload a clear shot of the item. As soon as it&apos;s processed, it&apos;s saved in your
+            wardrobe—you can refine details below or later in Edit. We remove the background onto a baby-blue catalog
+            surface and, when an API key is set, optionally polish with AI.
           </p>
           <p
             style={{
@@ -165,6 +206,10 @@ export function AddItem() {
 
       {step === 'details' && previewUrl && (
         <>
+          <p style={{ fontSize: '0.82rem', color: 'var(--brown-mid)', marginBottom: '0.75rem', lineHeight: 1.4 }}>
+            This piece is already in your wardrobe. Update details here, then use Done—or go Back to add another photo.
+            To remove it, open the item from Wardrobe and choose Remove.
+          </p>
           <div className="wardrobe-catalog-preview-wrap">
             <img src={previewUrl} alt="Preview" className="wardrobe-catalog-preview-img" />
           </div>
@@ -231,7 +276,7 @@ export function AddItem() {
               Back
             </button>
             <button type="button" className="btn btn-primary" style={{ flex: 2 }} onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving…' : 'Save to wardrobe'}
+              {saving ? 'Saving…' : 'Done'}
             </button>
           </div>
         </>

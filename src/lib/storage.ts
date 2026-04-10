@@ -9,7 +9,7 @@ import type {
   WeatherState,
   Outfit,
 } from '@/types'
-import type { ImprovementAction, OutfitImprovementSuggestion } from '@/lib/outfitImprovements'
+import type { ImprovementAction } from '@/lib/improvementTypes'
 import { wishlistKeyForAction } from '@/lib/wishlistKeys'
 import { outfitSignature } from '@/lib/outfitSignature'
 import {
@@ -35,7 +35,6 @@ export interface SuggestedOutfitEntry {
   outfit: Outfit
   occasion: Occasion
   weather: WeatherState
-  improvements?: OutfitImprovementSuggestion
   addedAt: string
 }
 
