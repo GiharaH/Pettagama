@@ -246,11 +246,20 @@
   right: 0;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 8px;
   padding: 0 16px;
   font-size: 13px;
   font-family: Arial, sans-serif;
   font-weight: 600;
   color: #000;
+}
+
+.unsupported-wardrobe-softkeys-btns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .unsupported-wardrobe-softkeys button {

@@ -67,6 +67,13 @@ export const SEASONS = [
 
 export const ALL_CATEGORIES = Object.keys(CATEGORY_LABELS) as WardrobeCategory[]
 
+/**
+ * File input `accept` for image uploads. Includes `image/*` plus common MIME spellings and
+ * file extensions so mobile/desktop pickers reliably offer JPEG, HEIC, WebP, etc.
+ */
+export const IMAGE_FILE_ACCEPT =
+  'image/*,image/jpeg,image/jpg,image/pjpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,image/heic,image/heif,image/avif,.jpg,.jpeg,.jpe,.png,.gif,.webp,.bmp,.tif,.tiff,.heic,.heif,.avif'
+
 /** Nice-to-have clothing suggestions shown after outfit generation, with inspiration photos */
 export const NICE_TO_HAVE_SUGGESTIONS: { title: string; imageUrl: string }[] = [
   { title: 'Neutral belt', imageUrl: 'https://source.unsplash.com/featured/400x520/?fashion,belt,accessory' },

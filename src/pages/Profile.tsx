@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { BrandHeader } from '@/components/BrandHeader'
 import { getUserDetails, saveUserDetails, getProfile, saveProfile } from '@/lib/storage'
-import { BODY_SHAPES } from '@/lib/constants'
+import { BODY_SHAPES, IMAGE_FILE_ACCEPT } from '@/lib/constants'
 import type { UserDetails, Gender, BodyShape } from '@/types'
 import '@/styles/theme.css'
 
@@ -74,7 +74,9 @@ export function Profile() {
 
       <form onSubmit={handleSubmit} className="card card-accent-teal" style={{ marginBottom: '1.5rem' }}>
         {/* Profile picture */}
-        <label className="field-label">Profile picture</label>
+        <label className="field-label field-label--accent" htmlFor="profile-photo-input">
+          Profile picture
+        </label>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
           <div className="profile-photo-frame">
             {profilePictureUrl ? (
@@ -87,9 +89,10 @@ export function Profile() {
           </div>
           <div>
             <input
+              id="profile-photo-input"
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept={IMAGE_FILE_ACCEPT}
               onChange={handlePhotoChange}
               className="sr-only"
               aria-label="Choose profile picture from gallery"

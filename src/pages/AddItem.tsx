@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getWardrobe, saveWardrobe } from '@/lib/storage'
 import { readFileAsDataUrl, shouldBlockWardrobeImageUpload, suggestCategoryForImage } from '@/lib/ai'
 import { UnsupportedWardrobeImageModal } from '@/components/UnsupportedWardrobeImageModal'
 import { processWardrobeUpload } from '@/lib/wardrobeCatalogImage'
-import { CATEGORY_LABELS, ALL_CATEGORIES, COLOUR_GROUPS, SEASONS } from '@/lib/constants'
+import { CATEGORY_LABELS, ALL_CATEGORIES, COLOUR_GROUPS, SEASONS, IMAGE_FILE_ACCEPT } from '@/lib/constants'
 import type { WardrobeItem, WardrobeCategory, ColourGroup, SeasonSuitability } from '@/types'
 import { BrandHeader } from '@/components/BrandHeader'
 import '@/styles/theme.css'
@@ -27,25 +27,45 @@ export function AddItem() {
   const [suggestingCategory, setSuggestingCategory] = useState(false)
   const [processingPhoto, setProcessingPhoto] = useState(false)
   const [unsupportedModalOpen, setUnsupportedModalOpen] = useState(false)
+  const pendingFileRef = useRef<File | null>(null)
+
+  const applyWardrobeFile = useCallback(async (file: File) => {
+    const { catalogUrl, dominantColour } = await processWardrobeUpload(file)
+    setPreviewUrl(catalogUrl)
+    setDominantColour(dominantColour)
+    setStep('details')
+  }, [])
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     const input = e.target
+    pendingFileRef.current = null
     setProcessingPhoto(true)
     try {
       const dataUrl = await readFileAsDataUrl(file)
       if (await shouldBlockWardrobeImageUpload(dataUrl)) {
+        pendingFileRef.current = file
         setUnsupportedModalOpen(true)
         return
       }
-      const { catalogUrl, dominantColour } = await processWardrobeUpload(file)
-      setPreviewUrl(catalogUrl)
-      setDominantColour(dominantColour)
-      setStep('details')
+      await applyWardrobeFile(file)
     } finally {
       setProcessingPhoto(false)
       input.value = ''
+    }
+  }
+
+  const handleProceedWithBlockedImage = async () => {
+    const file = pendingFileRef.current
+    pendingFileRef.current = null
+    setUnsupportedModalOpen(false)
+    if (!file) return
+    setProcessingPhoto(true)
+    try {
+      await applyWardrobeFile(file)
+    } finally {
+      setProcessingPhoto(false)
     }
   }
 
@@ -126,8 +146,7 @@ export function AddItem() {
           <input
             ref={fileInput}
             type="file"
-            accept="image/*"
-            capture="environment"
+            accept={IMAGE_FILE_ACCEPT}
             onChange={handleFile}
             className="sr-only"
             aria-label="Choose photo"
@@ -224,7 +243,14 @@ export function AddItem() {
         </button>
       )}
 
-      <UnsupportedWardrobeImageModal open={unsupportedModalOpen} onClose={() => setUnsupportedModalOpen(false)} />
+      <UnsupportedWardrobeImageModal
+        open={unsupportedModalOpen}
+        onClose={() => {
+          pendingFileRef.current = null
+          setUnsupportedModalOpen(false)
+        }}
+        onProceedAnyway={handleProceedWithBlockedImage}
+      />
     </div>
   )
 }

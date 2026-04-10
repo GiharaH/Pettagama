@@ -6,9 +6,11 @@ import './UnsupportedWardrobeImageModal.css'
 export interface UnsupportedWardrobeImageModalProps {
   open: boolean
   onClose: () => void
+  /** Skip the wardrobe-photo check and continue with the selected file (Add item flow). */
+  onProceedAnyway?: () => void | Promise<void>
 }
 
-export function UnsupportedWardrobeImageModal({ open, onClose }: UnsupportedWardrobeImageModalProps) {
+export function UnsupportedWardrobeImageModal({ open, onClose, onProceedAnyway }: UnsupportedWardrobeImageModalProps) {
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -83,17 +85,24 @@ export function UnsupportedWardrobeImageModal({ open, onClose }: UnsupportedWard
                 className="unsupported-wardrobe-msg-wrap"
               >
                 <p className="unsupported-wardrobe-msg" id="unsupported-wardrobe-title">
-                  Unsupported image,
+                  This doesn&apos;t look like a
                   <br />
-                  try again.
+                  catalog-style clothing photo.
                 </p>
               </motion.div>
 
               <div className="unsupported-wardrobe-softkeys">
                 <span>Options</span>
-                <button type="button" onClick={onClose}>
-                  Exit
-                </button>
+                <div className="unsupported-wardrobe-softkeys-btns">
+                  {onProceedAnyway ? (
+                    <button type="button" onClick={() => void onProceedAnyway()}>
+                      Add anyway
+                    </button>
+                  ) : null}
+                  <button type="button" onClick={onClose}>
+                    Exit
+                  </button>
+                </div>
               </div>
             </div>
           </div>
