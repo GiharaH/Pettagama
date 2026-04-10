@@ -3,6 +3,9 @@ import type { HairNecklineKey } from '@/types'
 /** Source asset: neckline × hairstyle grid (realistic reference). */
 export const HAIR_ADVISOR_INFOGRAPHIC_SRC = '/hair-advisor-infographic.png'
 
+/** Full “Common women’s necklines” 4×4 reference chart (Hair Advisor popup). */
+export const NECKLINE_VISUAL_GUIDE_SRC = '/neckline-visual-guide.png'
+
 /** Pixel dimensions of `hair-advisor-infographic.png`. */
 export const INFOGRAPHIC_IMG = { w: 686, h: 1024 } as const
 

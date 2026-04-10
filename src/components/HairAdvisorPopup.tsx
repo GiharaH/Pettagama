@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react'
 import { createPortal } from 'react-dom'
 import type { HairNecklineKey, Outfit } from '@/types'
 import {
@@ -10,13 +10,15 @@ import { inferNecklineTypeForTop } from '@/lib/necklineInference'
 import {
   HAIR_ADVISOR_INFOGRAPHIC_SRC,
   INFOGRAPHIC_IMG,
+  NECKLINE_VISUAL_GUIDE_SRC,
   PORTRAIT_CELL,
   infographicRowForNeckline,
 } from '@/lib/hairAdvisorInfographic'
 import {
   LONG_GUIDE,
   SHORT_GUIDE,
-  TEXTURE_GUIDE,
+  TEXTURE_GUIDE_PHOTO_CROP,
+  textureGuideSpriteAsset,
   type HairLengthChoice,
   type HairTextureIndex,
   HAIR_TEXTURE_LABELS,
@@ -28,6 +30,32 @@ import './HairAdvisorPopup.css'
 
 type SpriteAsset = { src: string; w: number; h: number; rows: number; cols: number }
 
+/** Max size for 3-up medium hairstyle cards (narrow columns). */
+const PORTRAIT_FIT_MEDIUM = { maxVh: 46, maxPx: 380 } as const
+/** Main short/long guide sprite (single hero). */
+const PORTRAIT_FIT_GUIDE = { maxVh: 54, maxPx: 480 } as const
+/** Texture back-view sprite beside the guide. */
+const PORTRAIT_FIT_TEXTURE = { maxVh: 44, maxPx: 360 } as const
+
+function portraitFitStyle(
+  cellW: number,
+  cellH: number,
+  fit: { maxVh: number; maxPx: number }
+): CSSProperties {
+  const { maxVh, maxPx } = fit
+  return {
+    aspectRatio: `${cellW} / ${cellH}`,
+    maxHeight: `min(${maxVh}vh, ${maxPx}px)`,
+    width: `min(100%, calc(min(${maxVh}vh, ${maxPx}px) * ${cellW} / ${cellH}))`,
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    boxSizing: 'border-box',
+  }
+}
+
+/** Optional trim of the source file (fractions of width/height per edge) before taking the sprite grid. */
+type SourceCropFrac = { left: number; top: number; right: number; bottom: number }
+
 /** Uniform grid sprite crop (ResizeObserver + pixel background). */
 function SpriteCropPortrait({
   asset,
@@ -36,6 +64,8 @@ function SpriteCropPortrait({
   alt,
   lightBorder,
   className = '',
+  fit = PORTRAIT_FIT_GUIDE,
+  sourceCrop,
 }: {
   asset: SpriteAsset
   row: number
@@ -43,11 +73,20 @@ function SpriteCropPortrait({
   alt: string
   lightBorder?: boolean
   className?: string
+  fit?: { maxVh: number; maxPx: number }
+  /** When set, only this inner rectangle is used for cell size & background alignment (e.g. texture banners). */
+  sourceCrop?: SourceCropFrac
 }) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [frameW, setFrameW] = useState(0)
-  const cellW = asset.w / asset.cols
-  const cellH = asset.h / asset.rows
+  const W = asset.w
+  const H = asset.h
+  const x0 = sourceCrop ? sourceCrop.left * W : 0
+  const y0 = sourceCrop ? sourceCrop.top * H : 0
+  const innerW = sourceCrop ? (1 - sourceCrop.left - sourceCrop.right) * W : W
+  const innerH = sourceCrop ? (1 - sourceCrop.top - sourceCrop.bottom) * H : H
+  const cellW = innerW / asset.cols
+  const cellH = innerH / asset.rows
 
   useLayoutEffect(() => {
     const el = wrapRef.current
@@ -61,10 +100,10 @@ function SpriteCropPortrait({
   }, [])
 
   const scale = frameW > 0 ? frameW / cellW : 0
-  const bgW = asset.w * scale
-  const bgH = asset.h * scale
-  const posX = -(col * cellW) * scale
-  const posY = -(row * cellH) * scale
+  const bgW = W * scale
+  const bgH = H * scale
+  const posX = -(x0 + col * cellW) * scale
+  const posY = -(y0 + row * cellH) * scale
 
   const cls = [
     'hair-advisor-portrait',
@@ -78,7 +117,7 @@ function SpriteCropPortrait({
     <div
       ref={wrapRef}
       className={cls}
-      style={{ aspectRatio: `${cellW} / ${cellH}` }}
+      style={portraitFitStyle(cellW, cellH, fit)}
       role="img"
       aria-label={alt}
     >
@@ -103,16 +142,19 @@ function MediumInfographicPortrait({
   col,
   alt,
   lightBorder,
+  fit = PORTRAIT_FIT_MEDIUM,
 }: {
   row: number
   col: number
   alt: string
   lightBorder?: boolean
+  fit?: { maxVh: number; maxPx: number }
 }) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const [frameW, setFrameW] = useState(0)
   const { w: imgW, h: imgH } = INFOGRAPHIC_IMG
   const { w: cellW, h: cellH, offX } = PORTRAIT_CELL
+  const fitStyle = portraitFitStyle(cellW, cellH, fit)
 
   useLayoutEffect(() => {
     const el = wrapRef.current
@@ -135,7 +177,7 @@ function MediumInfographicPortrait({
     <div
       ref={wrapRef}
       className={`hair-advisor-portrait${lightBorder ? ' hair-advisor-portrait--light-border' : ''}`}
-      style={{ aspectRatio: `${cellW} / ${cellH}` }}
+      style={fitStyle}
       role="img"
       aria-label={alt}
     >
@@ -312,6 +354,22 @@ export function HairAdvisorPopup({ open, onClose, outfit, initialNecklineKey }: 
 
                 <div className="hair-advisor-detected">Detected neckline: {content.displayLabel}</div>
 
+                <figure className="hair-advisor-neckline-guide">
+                  <figcaption className="hair-advisor-neckline-guide__caption">
+                    Common women&apos;s necklines — match your top to the closest shape, then pick it in the list on the
+                    left.
+                  </figcaption>
+                  <img
+                    src={NECKLINE_VISUAL_GUIDE_SRC}
+                    alt="Chart of sixteen necklines in a four-by-four grid: V-neck, U-neck, Scoop, Square, Cowl high, Jewel, Halter, Turtleneck, Boat, Sweetheart, Straight-across, Off-shoulder, Asymmetric, Cowl low, Tie-neck, and Keyhole."
+                    className="hair-advisor-neckline-guide__img"
+                    width={749}
+                    height={999}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </figure>
+
                 {length === 'medium' ? (
                   <div className="hair-advisor-grid">
                     <HairCardMedium data={content.topPick} isTopPick necklineKey={selected} col={0} />
@@ -339,11 +397,13 @@ export function HairAdvisorPopup({ open, onClose, outfit, initialNecklineKey }: 
                     <div className="hair-advisor-guide-hero__texture">
                       <div className="hair-advisor-sidebar__label">Your texture</div>
                       <SpriteCropPortrait
-                        asset={TEXTURE_GUIDE}
-                        row={texRow}
+                        asset={textureGuideSpriteAsset(texRow)}
+                        row={0}
                         col={texCol}
                         alt={`Hair texture ${HAIR_TEXTURE_LABELS[textureIndex]}`}
                         className="hair-advisor-portrait--texture-thumb"
+                        fit={PORTRAIT_FIT_TEXTURE}
+                        sourceCrop={TEXTURE_GUIDE_PHOTO_CROP}
                       />
                       <div className="hair-advisor-texture-id">{HAIR_TEXTURE_LABELS[textureIndex]}</div>
                     </div>
