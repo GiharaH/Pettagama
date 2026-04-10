@@ -14,8 +14,8 @@ export function Layout() {
           src="/design-room-fab-icon.png"
           alt=""
           className="design-room-fab__img"
-          width={44}
-          height={52}
+          width={576}
+          height={1024}
           decoding="async"
         />
       </Link>

@@ -420,6 +420,11 @@ textarea {
   color: var(--white);
 }
 
+/* Add item — anchor for in-page UI (e.g. unsupported-image dialog) */
+.add-item-page {
+  position: relative;
+}
+
 /* Add-item preview: catalog image already includes baby-blue fill */
 .wardrobe-catalog-preview-wrap {
   margin: 0 auto 1.25rem;
@@ -557,27 +562,37 @@ textarea {
 
 .wardrobe-flatlay-item {
   flex: 0 0 auto;
-  width: 92px;
+  width: 96px;
   display: block;
   text-decoration: none;
   color: inherit;
 }
 
-.wardrobe-flatlay-item img {
-  width: 100%;
-  height: auto;
-  max-height: 132px;
-  display: block;
-  object-fit: contain;
-  object-position: center bottom;
-  background: none;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
+/* Same baby blue as add-item catalog preview; vertical ellipse frames every garment */
+.wardrobe-flatlay-item__oval {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 136px;
+  margin: 0 auto;
+  background: #b8e0f2;
+  border-radius: 50%;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
 }
 
-.wardrobe-flatlay-item:hover img {
-  opacity: 0.88;
+.wardrobe-flatlay-item__oval img {
+  width: 92%;
+  height: 92%;
+  display: block;
+  object-fit: contain;
+  object-position: center center;
+}
+
+.wardrobe-flatlay-item:hover .wardrobe-flatlay-item__oval img {
+  opacity: 0.9;
 }
 
 .wardrobe-empty {
@@ -1533,29 +1548,26 @@ textarea {
   text-transform: uppercase;
 }
 
-/* Design room — circular sky-blue FAB with star-earring image (above bottom nav) */
+/* Design room — full mosaic card image (above bottom nav), no circular frame */
 .design-room-fab {
   position: fixed;
   bottom: calc(var(--nav-bar-h) + 12px + var(--safe-bottom));
   right: max(12px, var(--safe-right));
   z-index: 101;
-  width: clamp(52px, 14vw, 68px);
-  height: clamp(52px, 14vw, 68px);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #87ceeb;
-  border: 3px solid #4aafd4;
-  box-shadow: 0 5px 18px rgba(14, 90, 120, 0.28);
+  display: block;
+  line-height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
   text-decoration: none;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+  filter: drop-shadow(0 4px 14px rgba(32, 30, 26, 0.28));
+  transition: transform var(--transition-fast), filter var(--transition-fast);
 }
 
 .design-room-fab:hover {
-  transform: scale(1.05);
-  background: #9bd8f2;
-  box-shadow: 0 7px 22px rgba(14, 90, 120, 0.32);
+  transform: scale(1.04);
+  filter: drop-shadow(0 6px 18px rgba(32, 30, 26, 0.32));
 }
 
 .design-room-fab:active {
@@ -1563,12 +1575,9 @@ textarea {
 }
 
 .design-room-fab__img {
-  width: 44px;
-  height: auto;
-  max-height: 52px;
-  object-fit: contain;
   display: block;
-  flex-shrink: 0;
+  width: clamp(44px, 12vw, 64px);
+  height: auto;
   pointer-events: none;
 }
 

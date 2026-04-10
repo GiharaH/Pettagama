@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getWardrobe, saveWardrobe } from '@/lib/storage'
-import { suggestCategoryForImage } from '@/lib/ai'
+import { readFileAsDataUrl, shouldBlockWardrobeImageUpload, suggestCategoryForImage } from '@/lib/ai'
+import { UnsupportedWardrobeImageModal } from '@/components/UnsupportedWardrobeImageModal'
 import { processWardrobeUpload } from '@/lib/wardrobeCatalogImage'
 import { CATEGORY_LABELS, ALL_CATEGORIES, COLOUR_GROUPS, SEASONS } from '@/lib/constants'
 import type { WardrobeItem, WardrobeCategory, ColourGroup, SeasonSuitability } from '@/types'
@@ -25,19 +26,26 @@ export function AddItem() {
   const [saving, setSaving] = useState(false)
   const [suggestingCategory, setSuggestingCategory] = useState(false)
   const [processingPhoto, setProcessingPhoto] = useState(false)
+  const [unsupportedModalOpen, setUnsupportedModalOpen] = useState(false)
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    const input = e.target
     setProcessingPhoto(true)
     try {
+      const dataUrl = await readFileAsDataUrl(file)
+      if (await shouldBlockWardrobeImageUpload(dataUrl)) {
+        setUnsupportedModalOpen(true)
+        return
+      }
       const { catalogUrl, dominantColour } = await processWardrobeUpload(file)
       setPreviewUrl(catalogUrl)
       setDominantColour(dominantColour)
       setStep('details')
     } finally {
       setProcessingPhoto(false)
-      e.target.value = ''
+      input.value = ''
     }
   }
 
@@ -91,7 +99,7 @@ export function AddItem() {
   }
 
   return (
-    <div className="page page--wardrobe">
+    <div className="page page--wardrobe add-item-page">
       <BrandHeader
         eyebrow="Add to wardrobe"
         title={step === 'upload' ? 'New item' : 'Details'}
@@ -105,7 +113,14 @@ export function AddItem() {
             Photograph or upload a clear shot of the item. We remove the background, place it on a consistent baby-blue
             catalog surface, and—when an API key is configured—use AI to polish the look for your wardrobe.
           </p>
-          <p style={{ marginBottom: '1rem', fontSize: '0.85rem', color: 'var(--brown-mid)', fontStyle: 'italic' }}>
+          <p
+            style={{
+              marginBottom: '1rem',
+              fontSize: '0.85rem',
+              color: '#d4b896',
+              fontStyle: 'italic',
+            }}
+          >
             Plain backgrounds and good lighting help; processing may take a few seconds on first use while models load.
           </p>
           <input
@@ -208,6 +223,8 @@ export function AddItem() {
           Cancel
         </button>
       )}
+
+      <UnsupportedWardrobeImageModal open={unsupportedModalOpen} onClose={() => setUnsupportedModalOpen(false)} />
     </div>
   )
 }

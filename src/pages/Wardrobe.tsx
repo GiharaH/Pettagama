@@ -75,7 +75,9 @@ export function Wardrobe() {
 function FlatlayItem({ item }: { item: WardrobeItem }) {
   return (
     <Link to={`/wardrobe/edit/${item.id}`} className="wardrobe-flatlay-item">
-      <img src={item.imageUrl} alt="" />
+      <span className="wardrobe-flatlay-item__oval">
+        <img src={item.imageUrl} alt={item.name || 'Wardrobe item'} />
+      </span>
     </Link>
   )
 }
